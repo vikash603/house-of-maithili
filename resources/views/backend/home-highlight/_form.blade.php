@@ -1,0 +1,8 @@
+@if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+<div class="card"><div class="card-header"><h5 class="mb-0">Highlight details</h5></div><div class="card-body">
+    <div class="form-group"><label for="title">Label</label><input id="title" name="title" class="form-control" maxlength="120" value="{{ old('title', $highlight?->title) }}" required><small class="form-text text-muted">Keep the label short so it fits on mobile.</small></div>
+    <div class="form-group"><label for="icon">Icon style</label><select id="icon" name="icon" class="form-control" required>@foreach($icons as $key => $label)<option value="{{ $key }}" @selected(old('icon', $highlight?->icon ?? 'craft') === $key)>{{ $label }}</option>@endforeach</select></div>
+    <div class="form-group"><label for="sort_order">Display order</label><input id="sort_order" type="number" name="sort_order" min="0" max="65535" class="form-control" value="{{ old('sort_order', $highlight?->sort_order ?? 0) }}"></div>
+    <input type="hidden" name="is_active" value="0"><div class="custom-control custom-checkbox"><input id="is_active" type="checkbox" name="is_active" value="1" class="custom-control-input" @checked(old('is_active', $highlight?->is_active ?? true))><label class="custom-control-label" for="is_active">Show on storefront</label></div>
+</div></div>
+<div class="mt-3 d-flex justify-content-end"><a href="{{ route('home-highlights.index') }}" class="btn btn-light mr-2">Cancel</a><button type="submit" class="btn btn-primary">{{ $submitLabel }}</button></div>

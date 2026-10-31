@@ -14,12 +14,17 @@ class Product extends Model
         'slug',
         'brand',
         'sku',
+        'short_description',
         'description',
         'price',
         'sale_price',
         'thumbnail',
         'stock',
-        'status'
+        'status',
+        'is_featured',
+        'is_trending',
+        'is_made_to_order',
+        'lead_time_days',
     ];
     
     public function images()
@@ -41,4 +46,15 @@ public function subcategory()
 {
     return $this->belongsTo(SubCategory::class);
 }
+
+    protected function casts(): array
+    {
+        return [
+            'is_made_to_order' => 'boolean',
+            'lead_time_days' => 'integer',
+            'stock' => 'integer',
+            'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+        ];
+    }
 }

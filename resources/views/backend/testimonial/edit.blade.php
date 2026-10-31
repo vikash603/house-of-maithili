@@ -1,0 +1,2 @@
+@extends('backend.layout.app')
+@section('content')<div class="page-body"><div class="container-fluid"><div class="page-header"><h3>Edit Testimonial<small>Update customer feedback and publication status</small></h3></div><form method="POST" action="{{ route('testimonials.update', $testimonial) }}" enctype="multipart/form-data">@csrf @method('PUT') @include('backend.testimonial._form', ['submitLabel' => 'Save Changes'])</form></div></div>@endsection

@@ -52,6 +52,7 @@
                                                 <tr>
                                                     <th>Image</th>
                                                     <th>Name</th>
+                                                    <th>Display order</th>
                                                     <th>Status</th>
                                                     <th>Category</th>
                                                     <th>Option</th>
@@ -71,6 +72,9 @@
     <!-- Name -->
     <td>{{ $category->name }}</td>
 
+    <!-- Display Order -->
+    <td>{{ $category->sort_order }}</td>
+
     <!-- Status -->
     <td class="{{ $category->status ? 'order-success' : 'order-pending' }}">
         <span>{{ $category->status ? 'Active' : 'Inactive' }}</span>
@@ -84,7 +88,12 @@
 
         <!-- Edit -->
         <a href="javascript:void(0)"
-   onclick="openEditModal({{ $category->id }}, '{{ $category->name }}', {{ $category->status }})">
+   data-id="{{ $category->id }}"
+   data-name="{{ $category->name }}"
+   data-status="{{ (int) $category->status }}"
+   data-image="{{ $category->image }}"
+   data-sort-order="{{ $category->sort_order }}"
+   onclick="openEditModalFromButton(this)">
     <i class="fa fa-edit"></i>
 </a>
 

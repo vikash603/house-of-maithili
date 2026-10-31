@@ -1,0 +1,2 @@
+@extends('backend.layout.app')
+@section('content')<div class="page-body"><div class="container-fluid"><div class="page-header"><h3>Add Home Highlight<small>It will appear in the storefront value strip when enabled</small></h3></div><form method="POST" action="{{ route('home-highlights.store') }}">@csrf @include('backend.home-highlight._form', ['highlight' => null, 'submitLabel' => 'Add Highlight'])</form></div></div>@endsection

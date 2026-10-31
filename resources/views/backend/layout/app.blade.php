@@ -35,6 +35,7 @@
 
     <!-- App css-->
     <link rel="stylesheet" type="text/css" href="{{url('/')}}/backend/css/style.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('backend/css/product-catalog.css') }}">
 </head>
 
 <body>
@@ -209,6 +210,34 @@
                         </li>
 
                         <li>
+                            <a class="sidebar-header" href="{{ route('banners.index') }}">
+                                <i data-feather="image"></i>
+                                <span>Home Banners</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="sidebar-header" href="{{ route('stories.index') }}">
+                                <i data-feather="film"></i>
+                                <span>Our Stories</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="sidebar-header" href="{{ route('home-highlights.index') }}">
+                                <i data-feather="star"></i>
+                                <span>Home Highlights</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="sidebar-header" href="{{ route('testimonials.index') }}">
+                                <i data-feather="message-circle"></i>
+                                <span>Testimonials</span>
+                            </a>
+                        </li>
+
+                        <li>
                             <a class="sidebar-header" href="javascript:void(0)">
                                 <i data-feather="archive"></i>
                                 <span>Category</span>
@@ -294,7 +323,7 @@
                             </a>
                             <ul class="sidebar-submenu">
                                 <li>
-                                    <a href="order.html">
+                                    <a href="{{ route('admin.orders.index') }}">
                                         <i class="fa fa-circle"></i>Orders
                                     </a>
                                 </li>
@@ -314,12 +343,12 @@
                             </a>
                             <ul class="sidebar-submenu">
                                 <li>
-                                    <a href="coupon-list.html">
+                                    <a href="{{ route('coupons.index') }}">
                                         <i class="fa fa-circle"></i>List Coupons
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="coupon-create.html">
+                                    <a href="{{ route('coupons.create') }}">
                                         <i class="fa fa-circle"></i>Create Coupons
                                     </a>
                                 </li>
@@ -565,6 +594,12 @@
                                required>
                     </div>
 
+                    <div class="form-group mb-3">
+                        <label for="cat_sort_order">Display order</label>
+                        <input type="number" name="sort_order" id="cat_sort_order" class="form-control" min="0" max="65535" value="0" inputmode="numeric">
+                        <small class="text-muted">Lower numbers appear first in the shop and category navigation.</small>
+                    </div>
+
                     <!-- IMAGE -->
                     <div class="form-group mb-3">
                         <label>Category Image</label>
@@ -628,6 +663,7 @@ function openAddModal() {
     // ✅ reset fields
     document.getElementById('cat_name').value = '';
     document.getElementById('cat_status').value = 1;
+    document.getElementById('cat_sort_order').value = 0;
 
     // ✅ 🔥 VERY IMPORTANT (file reset)
     document.querySelector('input[name="image"]').value = '';
@@ -641,7 +677,7 @@ function openAddModal() {
 }
 
 
-function openEditModal(id, name, status, image) {
+function openEditModal(id, name, status, image, sortOrder) {
     const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
 
     document.getElementById('modalTitle').innerText = 'Edit Category';
@@ -656,6 +692,7 @@ function openEditModal(id, name, status, image) {
     // fill data
     document.getElementById('cat_name').value = name;
     document.getElementById('cat_status').value = status;
+    document.getElementById('cat_sort_order').value = sortOrder || 0;
 
     // ✅ 🔥 VERY IMPORTANT (file reset)
     document.querySelector('input[name="image"]').value = '';
@@ -672,6 +709,10 @@ function openEditModal(id, name, status, image) {
     }
 
     modal.show();
+}
+
+function openEditModalFromButton(button) {
+    openEditModal(button.dataset.id, button.dataset.name, button.dataset.status, button.dataset.image, button.dataset.sortOrder);
 }
 
 

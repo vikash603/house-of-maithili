@@ -63,4 +63,15 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 ## License
 
+Learning Git with ChatGPT
+
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## House Of Maithili customer orders
+
+- Customers can place an order as a guest. After COD placement or verified online payment, a new email address gets an account automatically and the customer is signed in. If that email already belongs to an account, a one-time email code safely signs in and links the guest order.
+- Customers can sign in with a password or at `/login/otp` using an emailed one-time code.
+- Branded invoice PDFs are available from the order confirmation, order email, and customer order history; the browser invoice page is printable too.
+- Configure a real SMTP mailer in `.env` before production. The example environment uses the `log` mailer, which writes messages to the application log instead of delivering them.
+- Order and OTP emails are queued. Run `php artisan queue:work --tries=3` in production (or keep the queue worker running alongside the app) so email is delivered promptly.
+- Set `HOM_BUSINESS_ADDRESS` to the verified business address before launch. The current order data does not store GST/HSN tax breakdowns, so the PDF is an order invoice/receipt and does not calculate tax.

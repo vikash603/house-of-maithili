@@ -34,11 +34,19 @@ Version         : 1.0
 
     // header Search
     if ($('.search-box-outer').length) {
-        $('.search-box-outer').on('click', function () {
+        $('.search-box-outer').on('click', function (event) {
+            event.preventDefault();
             $('body').addClass('search-active');
+            window.setTimeout(function () {
+                $('#maithili-search-input').trigger('focus');
+            }, 80);
         });
-        $('.close-search').on('click', function () {
+        $('.close-search').on('click', function (event) {
+            event.preventDefault();
             $('body').removeClass('search-active');
+        });
+        $(document).on('keydown', function (event) {
+            if (event.key === 'Escape') $('body').removeClass('search-active');
         });
     }
 
@@ -262,6 +270,31 @@ Version         : 1.0
             }
         }
     });
+
+    // House Of Maithili category carousel: keep categories in one row on every screen size.
+    var categoryTrack = document.querySelector('.maithili-shop-category-list');
+    if (categoryTrack) {
+        var categoryPrev = document.querySelector('.maithili-category-prev');
+        var categoryNext = document.querySelector('.maithili-category-next');
+        var updateCategoryControls = function () {
+            var maxScroll = categoryTrack.scrollWidth - categoryTrack.clientWidth;
+            if (categoryPrev) categoryPrev.disabled = categoryTrack.scrollLeft <= 2;
+            if (categoryNext) categoryNext.disabled = maxScroll <= 2 || categoryTrack.scrollLeft >= maxScroll - 2;
+        };
+        var slideCategories = function (direction) {
+            categoryTrack.scrollBy({
+                left: direction * Math.max(categoryTrack.clientWidth * 0.82, 180),
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+            });
+        };
+
+        categoryPrev?.addEventListener('click', function () { slideCategories(-1); });
+        categoryNext?.addEventListener('click', function () { slideCategories(1); });
+        categoryTrack.addEventListener('scroll', updateCategoryControls, { passive: true });
+        window.addEventListener('resize', updateCategoryControls);
+        window.addEventListener('load', updateCategoryControls, { once: true });
+        updateCategoryControls();
+    }
 
 
     // instagram-slider

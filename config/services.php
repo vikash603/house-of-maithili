@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'house_of_maithili_whatsapp' => env('HOUSE_OF_MAITHILI_WHATSAPP', '918226803011'),
+
+    'razorpay' => [
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
+
 ];

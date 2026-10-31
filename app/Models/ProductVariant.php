@@ -12,10 +12,23 @@ class ProductVariant extends Model
         'size',
         'color',
         'price',
-        'stock'
+        'sale_price',
+        'stock',
+        'sku',
+        'is_active',
     ];
     public function product()
 {
     return $this->belongsTo(Product::class);
 }
+
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+            'stock' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
 }

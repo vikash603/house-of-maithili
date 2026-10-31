@@ -1,0 +1,21 @@
+@php($isEdit = isset($coupon))
+@if($errors->any())<div class="alert alert-danger"><strong>Please review the coupon details.</strong><ul class="mb-0 mt-2">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+<form method="POST" action="{{ $isEdit ? route('coupons.update', $coupon) : route('coupons.store') }}">
+    @csrf @if($isEdit) @method('PUT') @endif
+    <div class="catalog-card"><div class="catalog-card-header"><h4>Discount details</h4><span class="catalog-help">Coupon codes are case-insensitive at checkout.</span></div><div class="catalog-card-body">
+        <div class="form-row">
+            <div class="form-group col-md-6"><label class="catalog-label" for="coupon-code">Coupon code <span class="catalog-required">*</span></label><input id="coupon-code" class="form-control" name="code" value="{{ old('code', $coupon->code ?? '') }}" maxlength="40" required placeholder="e.g. MAITHILI10" style="text-transform:uppercase">@error('code')<small class="text-danger">{{ $message }}</small>@enderror</div>
+            <div class="form-group col-md-3"><label class="catalog-label" for="discount-type">Discount type</label><select id="discount-type" class="form-control" name="discount_type" required><option value="percentage" @selected(old('discount_type', $coupon->discount_type ?? 'percentage') === 'percentage')>Percentage</option><option value="fixed" @selected(old('discount_type', $coupon->discount_type ?? '') === 'fixed')>Fixed amount</option></select></div>
+            <div class="form-group col-md-3"><label class="catalog-label" for="discount-value">Discount value <span class="catalog-required">*</span></label><input id="discount-value" class="form-control" type="number" name="discount_value" value="{{ old('discount_value', $coupon->discount_value ?? '') }}" min="0.01" step="0.01" required></div>
+            <div class="form-group col-md-6"><label class="catalog-label" for="minimum-subtotal">Minimum cart subtotal (₹)</label><input id="minimum-subtotal" class="form-control" type="number" name="minimum_subtotal" value="{{ old('minimum_subtotal', $coupon->minimum_subtotal ?? 0) }}" min="0" step="0.01"><small class="catalog-help">Set to zero if the code has no minimum purchase.</small></div>
+            <div class="form-group col-md-6" id="maximum-discount-field"><label class="catalog-label" for="maximum-discount">Maximum discount (₹)</label><input id="maximum-discount" class="form-control" type="number" name="maximum_discount" value="{{ old('maximum_discount', $coupon->maximum_discount ?? '') }}" min="0.01" step="0.01"><small class="catalog-help">Caps percentage offers. Leave empty for no cap.</small></div>
+            <div class="form-group col-md-6"><label class="catalog-label" for="valid-from">Starts at</label><input id="valid-from" class="form-control" type="datetime-local" name="valid_from" value="{{ old('valid_from', isset($coupon) && $coupon->valid_from ? $coupon->valid_from->format('Y-m-d\\TH:i') : '') }}"></div>
+            <div class="form-group col-md-6"><label class="catalog-label" for="valid-until">Expires at</label><input id="valid-until" class="form-control" type="datetime-local" name="valid_until" value="{{ old('valid_until', isset($coupon) && $coupon->valid_until ? $coupon->valid_until->format('Y-m-d\\TH:i') : '') }}"><small class="catalog-help">Leave both dates blank for a coupon with no scheduled end.</small></div>
+            <div class="form-group col-12"><label class="catalog-size-option"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $coupon->is_active ?? true))> Coupon is active and can be used at checkout</label></div>
+        </div>
+    </div></div>
+    <div class="catalog-sticky-actions"><a href="{{ route('coupons.index') }}" class="btn btn-light">Cancel</a><button class="btn btn-primary px-4">{{ $isEdit ? 'Save coupon' : 'Create coupon' }}</button></div>
+</form>
+@section('js')<script>
+(() => { const type = document.getElementById('discount-type'); const max = document.getElementById('maximum-discount-field'); const sync = () => { max.hidden = type.value !== 'percentage'; document.getElementById('maximum-discount').disabled = type.value !== 'percentage'; }; type.addEventListener('change', sync); sync(); })();
+</script>@endsection

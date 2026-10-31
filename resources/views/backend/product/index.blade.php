@@ -1,191 +1,20 @@
 @extends('backend.layout.app')
 @section('content')
-
-            <div class="page-body">
-                <!-- Container-fluid starts-->
-                <div class="container-fluid">
-                    <div class="page-header">
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="page-header-left">
-                                    <h3>Product List
-                                        <small>Multikart Admin panel</small>
-                                    </h3>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <ol class="breadcrumb pull-right">
-                                    <li class="breadcrumb-item">
-                                        <a href="index.html">
-                                            <i data-feather="home"></i>
-                                        </a>
-                                    </li>
-                                    <li class="breadcrumb-item">Digital</li>
-                                    <li class="breadcrumb-item active">Product List</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Container-fluid Ends-->
-
-                <!-- Container-fluid starts-->
-                <div class="container-fluid">
-                    <div class="row">
-                    <div class="col-sm-12">
-    <div class="card">
-
-        <!-- HEADER -->
-        <div class="card-header d-flex justify-content-between align-items-center">
-
-            <!-- SEARCH -->
-            <form method="GET" action="{{ route('products.index') }}" class="search-form">
-                <input class="form-control" type="search" name="search"
-                       placeholder="Search product..." value="{{ request('search') }}">
-            </form>
-
-            <!-- ADD BUTTON -->
-            <a href="{{ route('products.create') }}" class="btn btn-primary">
-                Add New Product
-            </a>
-
-        </div>
-
-        <!-- BODY -->
-        <div class="card-body">
-            <div class="table-responsive table-desi">
-
-                <table class="table table-striped all-package">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        @forelse($products as $key => $product)
-                        <tr>
-
-                            <!-- ID -->
-                            <td>{{ $key+1 }}</td>
-
-                            <!-- IMAGE -->
-                            <td>
-                                @if($product->thumbnail)
-                                    <img src="{{ asset('uploads/products/'.$product->thumbnail) }}"
-                                         width="50" height="50" style="object-fit:cover;">
-                                @else
-                                    <span>No Image</span>
-                                @endif
-                            </td>
-
-                            <!-- NAME -->
-                            <td>{{ $product->name }}</td>
-
-                            <!-- CATEGORY -->
-                            <td>
-                                {{ $product->category->name ?? '-' }}
-                                <br>
-                                <small class="text-muted">
-                                    {{ $product->subcategory->name ?? '' }}
-                                </small>
-                            </td>
-
-                            <!-- PRICE -->
-                            <td>
-                                ₹{{ $product->price }}
-                                @if($product->sale_price)
-                                    <br>
-                                    <small class="text-success">
-                                        ₹{{ $product->sale_price }}
-                                    </small>
-                                @endif
-                            </td>
-
-                            <!-- STOCK -->
-                            <td>{{ $product->stock }}</td>
-
-                            <!-- STATUS -->
-                            <td>
-                                @if($product->status)
-                                    <span class="badge bg-success">Active</span>
-                                @else
-                                    <span class="badge bg-danger">Inactive</span>
-                                @endif
-                            </td>
-
-                            <!-- ACTION -->
-                            <td>
-
-                                <!-- EDIT -->
-                                <a href="{{ route('products.edit', $product->id) }}">
-                                    <i class="fa fa-edit text-primary"></i>
-                                </a>
-
-                                <!-- DELETE -->
-                                <a href="javascript:void(0)"
-                                   onclick="deleteConfirm({{ $product->id }})">
-                                    <i class="fa fa-trash text-danger"></i>
-                                </a>
-
-                                <form id="delete-form-{{ $product->id }}"
-                                      action="{{ route('products.destroy', $product->id) }}"
-                                      method="POST" style="display:none;">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-
-                            </td>
-
-                        </tr>
-
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center">
-                                No Products Found
-                            </td>
-                        </tr>
-                        @endforelse
-
-                    </tbody>
-                </table>
-
-                
-
-                <!-- PAGINATION -->
-                <div class="mt-3">
-                    {{ $products->links() }}
-                </div>
-
-            </div>
-        </div>
-
-    </div>
-</div>
-                    </div>
-                </div>
-                <!-- Container-fluid Ends-->
-            </div>
-  
-            @endsection
-
-            @section('js')
-
-            <script>
-function deleteConfirm(id){
-    if(confirm('Are you sure you want to delete?')){
-        document.getElementById('delete-form-'+id).submit();
-    }
-}
-</script>
-
-
+<div class="page-body"><div class="container-fluid catalog-page">
+    <div class="catalog-page-header"><div><span class="catalog-eyebrow">HOUSE OF MAITHILI · CATALOG</span><h1>Products</h1><p>Manage product details, variants, prices and ready stock.</p></div><div class="catalog-header-actions"><a href="{{ route('products.import') }}" class="btn btn-outline-primary">Bulk upload</a><a href="{{ route('products.create') }}" class="btn btn-primary">Add product</a></div></div>
+    @if(session('success'))<div class="alert alert-success" role="status">{{ session('success') }}</div>@endif
+    <div class="catalog-card"><div class="catalog-card-body">
+        <form method="GET" action="{{ route('products.index') }}" class="form-row align-items-end">
+            <div class="form-group col-lg-5"><label class="catalog-label" for="search">Search catalog</label><input id="search" class="form-control" type="search" name="search" value="{{ request('search') }}" placeholder="Product name or SKU"></div>
+            <div class="form-group col-md-4 col-lg-3"><label class="catalog-label" for="filter-category">Category</label><select id="filter-category" name="category_id" class="form-control"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(request('category_id') == $category->id)>{{ $category->name }}</option>@endforeach</select></div>
+            <div class="form-group col-md-4 col-lg-2"><label class="catalog-label" for="filter-status">Status</label><select id="filter-status" name="status" class="form-control"><option value="">All status</option><option value="1" @selected(request('status') === '1')>Active</option><option value="0" @selected(request('status') === '0')>Draft</option></select></div>
+            <div class="form-group col-md-4 col-lg-2 d-flex"><button class="btn btn-primary mr-2">Filter</button><a class="btn btn-light" href="{{ route('products.index') }}">Reset</a></div>
+        </form>
+    </div></div>
+    <div class="catalog-card"><div class="table-responsive"><table class="table catalog-product-table mb-0"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Inventory</th><th>Listing</th><th class="text-right">Actions</th></tr></thead><tbody>
+        @forelse($products as $product)
+        <tr><td><div class="catalog-product-cell">@if($product->thumbnail)<img src="{{ asset('uploads/products/'.$product->thumbnail) }}" alt="">@else<div class="catalog-product-placeholder">H</div>@endif<div><strong>{{ $product->name }}</strong><small>{{ $product->brand ?: 'House Of Maithili' }}@if($product->is_made_to_order) · Made to order @endif</small></div></div></td><td>{{ $product->sku ?: '—' }}</td><td>{{ $product->category->name ?? '—' }}@if($product->subcategory)<small class="d-block text-muted">{{ $product->subcategory->name }}</small>@endif</td><td><strong>₹{{ number_format($product->sale_price ?: $product->price, 2) }}</strong>@if($product->sale_price)<small class="d-block text-muted"><s>₹{{ number_format($product->price, 2) }}</s></small>@endif</td><td><strong>{{ $product->stock }}</strong><small class="d-block text-muted">{{ $product->variants_count }} variants</small></td><td><span class="catalog-status {{ $product->status ? 'is-active' : 'is-draft' }}">{{ $product->status ? 'Active' : 'Draft' }}</span></td><td class="text-right"><a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-primary">Edit</a><form class="d-inline" method="POST" action="{{ route('products.destroy', $product) }}" onsubmit="return confirm('Delete this product and its variants?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
+        @empty<tr><td colspan="7" class="text-center py-5 text-muted">No products found. Add your first product or import a catalog.</td></tr>@endforelse
+    </tbody></table></div><div class="catalog-pagination">{{ $products->links() }}</div></div>
+</div></div>
 @endsection

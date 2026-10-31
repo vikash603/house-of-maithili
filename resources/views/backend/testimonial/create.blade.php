@@ -1,0 +1,2 @@
+@extends('backend.layout.app')
+@section('content')<div class="page-body"><div class="container-fluid"><div class="page-header"><h3>Add Testimonial<small>Save verified customer feedback as a draft or publish it</small></h3></div><form method="POST" action="{{ route('testimonials.store') }}" enctype="multipart/form-data">@csrf @include('backend.testimonial._form', ['testimonial' => null, 'submitLabel' => 'Save Testimonial'])</form></div></div>@endsection

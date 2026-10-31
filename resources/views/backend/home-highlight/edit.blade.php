@@ -1,0 +1,2 @@
+@extends('backend.layout.app')
+@section('content')<div class="page-body"><div class="container-fluid"><div class="page-header"><h3>Edit Home Highlight<small>Update the storefront label, icon or display order</small></h3></div><form method="POST" action="{{ route('home-highlights.update', $highlight) }}">@csrf @method('PUT') @include('backend.home-highlight._form', ['submitLabel' => 'Save Changes'])</form></div></div>@endsection

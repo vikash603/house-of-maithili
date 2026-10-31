@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\ShopController;
+use App\Http\Controllers\Frontend\CartController;
+use App\Http\Controllers\Frontend\NewsletterController;
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\PrivacyController;
 use App\Http\Controllers\Backend\RefundController;
@@ -12,6 +15,16 @@ use App\Http\Controllers\Backend\ContactController;
 use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\SubCategoryController;
 use App\Http\Controllers\Backend\ProductController;
+use App\Http\Controllers\Backend\BannerController;
+use App\Http\Controllers\Backend\StoryController;
+use App\Http\Controllers\Backend\BulkProductImportController;
+use App\Http\Controllers\Backend\CouponController;
+use App\Http\Controllers\Backend\OrderController;
+use App\Http\Controllers\Backend\HomeHighlightController;
+use App\Http\Controllers\Backend\TestimonialController;
+use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\AccountAccessController;
+use App\Http\Controllers\Frontend\AccountOrderController;
 
 
 
@@ -24,12 +37,54 @@ use App\Http\Controllers\Backend\ProductController;
 // });
 
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/shop/suggestions', [ShopController::class, 'suggestions'])->name('shop.suggestions');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/shop/products/{product:slug}', [ShopController::class, 'show'])->name('shop.products.show');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/items', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/buy-now', [CartController::class, 'buyNow'])->name('cart.buy-now');
+Route::patch('/cart/items/{key}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/items/{key}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.coupon.apply');
+Route::delete('/checkout/coupon', [CheckoutController::class, 'removeCoupon'])->name('checkout.coupon.remove');
+Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->middleware('throttle:10,1')->name('checkout.place-order');
+Route::post('/checkout/payment/verify', [CheckoutController::class, 'verifyPayment'])->middleware('throttle:10,1')->name('checkout.payment.verify');
+Route::get('/checkout/success/{orderNumber}', [CheckoutController::class, 'success'])->middleware('signed')->name('checkout.success');
+Route::get('/checkout/invoice/{orderNumber}/pdf', [AccountAccessController::class, 'invoicePdf'])->middleware(['signed', 'throttle:10,1'])->name('checkout.invoice.pdf');
+Route::get('/checkout/invoice/{orderNumber}', [AccountAccessController::class, 'invoice'])->middleware('signed')->name('checkout.invoice');
+Route::post('/checkout/account/{orderNumber}/verify', [AccountAccessController::class, 'verifyOrderAccount'])->middleware(['signed', 'throttle:5,10'])->name('checkout.account.verify');
+Route::post('/checkout/account/{orderNumber}/resend', [AccountAccessController::class, 'resendOrderCode'])->middleware(['signed', 'throttle:3,10'])->name('checkout.account.resend');
+Route::post('/razorpay/webhook', [CheckoutController::class, 'webhook'])->name('razorpay.webhook');
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'store'])->name('newsletter.subscribe');
+Route::middleware('guest')->group(function () {
+  Route::get('/login/otp', [AccountAccessController::class, 'otpLogin'])->name('login.otp');
+  Route::post('/login/otp/send', [AccountAccessController::class, 'sendLoginCode'])->middleware('throttle:3,10')->name('login.otp.send');
+  Route::post('/login/otp/verify', [AccountAccessController::class, 'verifyLoginCode'])->middleware('throttle:5,10')->name('login.otp.verify');
+});
 
-Route::prefix('admin')->group(function () {
+Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
+  Route::get('orders', [AccountOrderController::class, 'index'])->name('orders.index');
+});
+
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->prefix('admin')->group(function () {
 
   Route::resource('categories', CategoryController::class);
   Route::resource('subcategories', SubCategoryController::class);
+  Route::get('products/import/template', [BulkProductImportController::class, 'template'])->name('products.import.template');
+  Route::get('products/import', [BulkProductImportController::class, 'index'])->name('products.import');
+  Route::post('products/import/preview', [BulkProductImportController::class, 'preview'])->name('products.import.preview');
+  Route::post('products/import/confirm', [BulkProductImportController::class, 'confirm'])->name('products.import.confirm');
+  Route::post('products/import/cancel', [BulkProductImportController::class, 'cancel'])->name('products.import.cancel');
   Route::resource('products', ProductController::class);
+  Route::resource('stories', StoryController::class)->except(['show']);
+  Route::resource('home-highlights', HomeHighlightController::class)->except(['show']);
+  Route::resource('testimonials', TestimonialController::class)->except(['show']);
+  Route::resource('coupons', CouponController::class)->except(['show']);
+  Route::get('orders', [OrderController::class, 'index'])->name('admin.orders.index');
+  Route::get('orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+  Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.status');
+  Route::post('orders/{order}/cod-paid', [OrderController::class, 'markCodPaid'])->name('admin.orders.cod-paid');
 
   // ✅ FIXED (no admin/admin)
   Route::delete('product-image/{id}', [ProductController::class, 'deleteImage'])
@@ -50,6 +105,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // })->name('dashboard');
 
     Route::get('/dashboard', [AdminController::class, 'index']); // ✅ Changed
+    Route::resource('banners', BannerController::class)->except(['show']);
 
 
      // privacy
