@@ -109,24 +109,25 @@
                         </div>
                         <div class="offcanvas-body">
                             <ul class="navbar-nav flex-grow-1 maithili-nav-links">
-                                <li class="nav-item"><a class="nav-link" href="{{ route('shop.index', ['sort' => 'newest']) }}">New Arrivals</a></li>
-                                <li class="nav-item maithili-shop-menu">
-                                    <a class="nav-link" href="{{ route('shop.index') }}" aria-haspopup="true">Shop <span aria-hidden="true">⌄</span></a>
-                                    <div class="maithili-shop-dropdown">
-                                        <a class="maithili-shop-dropdown-all" href="{{ route('shop.index') }}">Shop all pieces <span aria-hidden="true">→</span></a>
-                                        @forelse($navCategories as $navCategory)
-                                            <a href="{{ route('shop.index', ['category' => $navCategory->slug]) }}">{{ $navCategory->name }}</a>
-                                            @foreach($navCategory->subcategories as $navSubcategory)
-                                                <a class="maithili-shop-dropdown-subcategory" href="{{ route('shop.index', ['category' => $navCategory->slug, 'subcategory' => $navSubcategory->slug]) }}">{{ $navSubcategory->name }}</a>
-                                            @endforeach
-                                        @empty
-                                            <span class="maithili-shop-dropdown-empty">Categories coming soon</span>
-                                        @endforelse
-                                    </div>
-                                </li>
-                                <li class="nav-item"><a class="nav-link" href="{{ url('/#maithili-stories') }}">Our Story</a></li>
-                                <li class="nav-item"><a class="nav-link" href="{{ url('/#maithili-impact') }}">Impact</a></li>
-                                <li class="nav-item"><a class="nav-link" href="{{ url('/#maithili-contact') }}">Corporate Orders</a></li>
+                                @forelse($navCategories as $navCategory)
+                                    <li class="nav-item maithili-category-menu">
+                                        <div class="maithili-category-link-row">
+                                            <a class="nav-link" href="{{ route('shop.index', ['category' => $navCategory->slug]) }}">{{ $navCategory->name }}</a>
+                                            @if($navCategory->subcategories->isNotEmpty())
+                                                <button class="maithili-category-toggle" type="button" aria-label="Show {{ $navCategory->name }} subcategories" aria-expanded="false"><span aria-hidden="true">⌄</span></button>
+                                            @endif
+                                        </div>
+                                        @if($navCategory->subcategories->isNotEmpty())
+                                            <div class="maithili-category-dropdown" aria-label="{{ $navCategory->name }} subcategories">
+                                                @foreach($navCategory->subcategories as $navSubcategory)
+                                                    <a href="{{ route('shop.index', ['category' => $navCategory->slug, 'subcategory' => $navSubcategory->slug]) }}">{{ $navSubcategory->name }}</a>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </li>
+                                @empty
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}">Shop</a></li>
+                                @endforelse
                             </ul>
                             <a href="#" class="maithili-search-trigger search-box-outer" role="button" aria-label="Open search">
                                 <i class="far fa-search" aria-hidden="true"></i>
@@ -148,7 +149,17 @@
                     <ul>
                         <li><a href="{{ route('shop.index', ['sort' => 'newest']) }}">New Arrivals</a></li>
                         @foreach($navCategories as $navCategory)
-                            <li><a href="{{ route('shop.index', ['category' => $navCategory->slug]) }}">{{ $navCategory->name }}</a></li>
+                            <li class="maithili-mobile-category">
+                                <a href="{{ route('shop.index', ['category' => $navCategory->slug]) }}">{{ $navCategory->name }}</a>
+                                @if($navCategory->subcategories->isNotEmpty())
+                                    <button class="maithili-category-toggle" type="button" aria-label="Show {{ $navCategory->name }} subcategories" aria-expanded="false"><span aria-hidden="true">⌄</span></button>
+                                    <div class="maithili-category-dropdown" aria-label="{{ $navCategory->name }} subcategories">
+                                        @foreach($navCategory->subcategories as $navSubcategory)
+                                            <a href="{{ route('shop.index', ['category' => $navCategory->slug, 'subcategory' => $navSubcategory->slug]) }}">{{ $navSubcategory->name }}</a>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </li>
                         @endforeach
                         <li><a href="{{ url('/#maithili-stories') }}">Our Story</a></li>
                         <li><a href="{{ url('/#maithili-impact') }}">Impact</a></li>
@@ -291,6 +302,44 @@
     <script src="{{url('/')}}/frontend/js/wow.min.js"></script>
     <script src="{{url('/')}}/frontend/js/main.js"></script>
     <script src="{{ asset('frontend/js/shop-search.js') }}" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const categoryMenus = document.querySelectorAll('.maithili-category-menu, .maithili-mobile-category');
+
+            categoryMenus.forEach(function (menu) {
+                const toggle = menu.querySelector('.maithili-category-toggle');
+                if (!toggle) return;
+
+                toggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const isOpen = menu.classList.toggle('is-open');
+                    toggle.setAttribute('aria-expanded', String(isOpen));
+                    if (menu.classList.contains('maithili-mobile-category') && isOpen) {
+                        menu.querySelector('.maithili-category-dropdown').style.top = (toggle.getBoundingClientRect().bottom + 6) + 'px';
+                    }
+                });
+            });
+
+            document.addEventListener('click', function (event) {
+                categoryMenus.forEach(function (menu) {
+                    if (!menu.contains(event.target)) {
+                        menu.classList.remove('is-open');
+                        menu.querySelector('.maithili-category-toggle')?.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    categoryMenus.forEach(function (menu) {
+                        menu.classList.remove('is-open');
+                        menu.querySelector('.maithili-category-toggle')?.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+        });
+    </script>
 
 
 

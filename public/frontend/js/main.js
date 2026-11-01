@@ -90,29 +90,35 @@ Version         : 1.0
 
 
     // hero slider
-    $('.hero-slider').owlCarousel({
-        loop: true,
-        nav: true,
-        dots: true,
+    $('.maithili-hero-slider').each(function () {
+        var $slider = $(this);
+        var hasMultipleSlides = $slider.children('.maithili-hero-slide').length > 1;
+
+        $slider.owlCarousel({
+        loop: hasMultipleSlides,
+        nav: hasMultipleSlides,
+        dots: hasMultipleSlides,
         margin: 0,
-        autoplay: true,
+        autoplay: hasMultipleSlides,
         autoplayHoverPause: true,
         autoplayTimeout: 5000,
         items: 1,
+        responsiveRefreshRate: 100,
         navText: [
             "<i class='far fa-angle-left'></i>",
             "<i class='far fa-angle-right'></i>"
         ],
 
         onInitialized: function(event) {
-        var $firstAnimatingElements = $('.hero-slider .owl-item').eq(event.item.index).find("[data-animation]");
+        var $firstAnimatingElements = $(event.target).find('.owl-item').eq(event.item.index).find("[data-animation]");
         doAnimations($firstAnimatingElements);
         },
 
         onChanged: function(event){
-        var $firstAnimatingElements = $('.hero-slider .owl-item').eq(event.item.index).find("[data-animation]");
+        var $firstAnimatingElements = $(event.target).find('.owl-item').eq(event.item.index).find("[data-animation]");
         doAnimations($firstAnimatingElements);
         }
+    });
     });
 
     //hero slider do animations
