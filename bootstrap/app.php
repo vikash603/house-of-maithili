@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: ['razorpay/webhook']);
+        $middleware->web(append: [\App\Http\Middleware\CaptureOrderAttribution::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

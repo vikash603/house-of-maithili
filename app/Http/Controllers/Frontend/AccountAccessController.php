@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AccountAccessController extends Controller
@@ -25,17 +26,25 @@ class AccountAccessController extends Controller
         $email = Str::lower(trim($data['email']));
 
         if (User::where('email', $email)->exists()) {
-            try {
-                $access->sendLoginCode($email);
-            } catch (\Throwable $exception) {
-                report($exception);
-                return back()->withInput()->withErrors(['email' => 'We could not send a code right now. Please try again shortly.']);
+            $cooldownKey = 'login-otp-email:'.hash('sha256', $email);
+            if (!RateLimiter::tooManyAttempts($cooldownKey, 1)) {
+                RateLimiter::hit($cooldownKey, 60);
+                try {
+                    $access->sendLoginCode($email);
+                } catch (\Throwable $exception) {
+                    RateLimiter::clear($cooldownKey);
+                    report($exception);
+                    // Keep this response identical to unknown-account and cooldown responses.
+                    // Delivery failures are logged for operators without exposing account existence.
+                    $request->session()->put('otp_login_email', $email);
+                    return back()->with('status', 'If an account exists for this email, a sign-in code will be sent when available.');
+                }
             }
         }
 
         $request->session()->put('otp_login_email', $email);
 
-        return back()->with('status', 'If an account exists for this email, a sign-in code is on its way.');
+        return back()->with('status', 'If an account exists for this email, a sign-in code will be sent when available.');
     }
 
     public function verifyLoginCode(Request $request, AccountAccessService $access)

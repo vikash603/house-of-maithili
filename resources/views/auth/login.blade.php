@@ -43,8 +43,6 @@
         .hom-submit:disabled { cursor: wait; opacity: .78; transform: none; }
         .hom-register { margin: 24px 0 0; color: var(--hom-muted); text-align: center; font-size: 13px; }
         .hom-register a { color: var(--hom-maroon); font-weight: 700; text-decoration: none; }
-        .hom-otp-link { display: block; margin: 14px 0 0; color: var(--hom-maroon); text-align: center; font-size: 13px; font-weight: 700; text-decoration: none; }
-        .hom-otp-link:hover { color: var(--hom-gold); }
         .hom-privacy { margin-top: 48px; color: #9a9189; text-align: center; font-size: 11px; letter-spacing: .025em; }
         @media (max-width: 850px) { .hom-login-shell { padding: 22px; } .hom-login-card { max-width: 650px; min-height: 0; grid-template-columns: 1fr; } .hom-visual { min-height: 235px; } .hom-visual img { object-position: center 42%; } .hom-visual-copy { left: 30px; bottom: 25px; } .hom-visual-copy h2 { margin: 8px 0 4px; font-size: 29px; } .hom-visual-copy p { font-size: 12px; } .hom-form-panel { padding: 38px clamp(28px, 8vw, 60px); } .hom-brand { margin-bottom: 30px; } .hom-privacy { margin-top: 30px; } }
         @media (max-width: 480px) { .hom-login-shell { display: block; padding: 0; background: var(--hom-paper); } .hom-login-card { min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; } .hom-visual { min-height: 190px; } .hom-visual-copy { left: 22px; right: 20px; bottom: 18px; } .hom-visual-copy h2 { font-size: 25px; } .hom-visual-copy p { display: none; } .hom-form-panel { padding: 28px 24px 24px; } .hom-brand { margin-bottom: 28px; } .hom-brand img { width: 48px; height: 48px; } .hom-heading { font-size: 34px; } .hom-intro { margin-bottom: 25px; } }
@@ -110,8 +108,6 @@
 
                     <button class="hom-submit" id="hom-submit" type="submit"><span>Sign In</span></button>
                 </form>
-
-                <a class="hom-otp-link" href="{{ route('login.otp') }}">Sign in with an email code</a>
 
                 @if (Route::has('register'))
                     <p class="hom-register">New to House Of Maithili? <a href="{{ route('register') }}">Create an account</a></p>

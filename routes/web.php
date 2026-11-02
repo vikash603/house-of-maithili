@@ -38,6 +38,7 @@ use App\Http\Controllers\Frontend\AccountOrderController;
 
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/shop/suggestions', [ShopController::class, 'suggestions'])->name('shop.suggestions');
+Route::get('/shop/makhana', [ShopController::class, 'makhana'])->name('shop.makhana');
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/shop/products/{product:slug}', [ShopController::class, 'show'])->name('shop.products.show');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -57,17 +58,16 @@ Route::post('/checkout/account/{orderNumber}/verify', [AccountAccessController::
 Route::post('/checkout/account/{orderNumber}/resend', [AccountAccessController::class, 'resendOrderCode'])->middleware(['signed', 'throttle:3,10'])->name('checkout.account.resend');
 Route::post('/razorpay/webhook', [CheckoutController::class, 'webhook'])->name('razorpay.webhook');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'store'])->name('newsletter.subscribe');
-Route::middleware('guest')->group(function () {
-  Route::get('/login/otp', [AccountAccessController::class, 'otpLogin'])->name('login.otp');
-  Route::post('/login/otp/send', [AccountAccessController::class, 'sendLoginCode'])->middleware('throttle:3,10')->name('login.otp.send');
-  Route::post('/login/otp/verify', [AccountAccessController::class, 'verifyLoginCode'])->middleware('throttle:5,10')->name('login.otp.verify');
-});
-
 Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
   Route::get('orders', [AccountOrderController::class, 'index'])->name('orders.index');
+  Route::get('orders/{order}', [AccountOrderController::class, 'show'])->name('orders.show');
+  Route::post('orders/{order}/cancel', [AccountOrderController::class, 'requestCancellation'])->middleware('throttle:5,10')->name('orders.cancel');
+  Route::post('orders/{order}/return', [AccountOrderController::class, 'requestReturn'])->middleware('throttle:5,10')->name('orders.return');
 });
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->prefix('admin')->group(function () {
+
+  Route::middleware('can:access-admin')->group(function () {
 
   Route::resource('categories', CategoryController::class);
   Route::resource('subcategories', SubCategoryController::class);
@@ -81,11 +81,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
   Route::resource('home-highlights', HomeHighlightController::class)->except(['show']);
   Route::resource('testimonials', TestimonialController::class)->except(['show']);
   Route::resource('coupons', CouponController::class)->except(['show']);
-  Route::get('orders', [OrderController::class, 'index'])->name('admin.orders.index');
-  Route::get('orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
-  Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.status');
-  Route::post('orders/{order}/cod-paid', [OrderController::class, 'markCodPaid'])->name('admin.orders.cod-paid');
-
   // ✅ FIXED (no admin/admin)
   Route::delete('product-image/{id}', [ProductController::class, 'deleteImage'])
       ->name('product.image.delete');
@@ -95,16 +90,32 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
       return \App\Models\SubCategory::where('category_id', $id)->get();
   });
 
+  });
+
+  Route::middleware('can:manage-orders')->prefix('orders')->name('admin.orders.')->group(function () {
+    Route::post('/notifications/read-all', [OrderController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [OrderController::class, 'markNotificationRead'])->name('notifications.read');
+    Route::get('/', [OrderController::class, 'dashboard'])->name('dashboard');
+    Route::get('/list', [OrderController::class, 'index'])->name('index');
+    Route::get('/export', [OrderController::class, 'export'])->name('export');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('status');
+    Route::patch('/{order}/shipping', [OrderController::class, 'updateShipping'])->name('shipping');
+    Route::post('/{order}/notes', [OrderController::class, 'addNote'])->name('notes');
+    Route::post('/{order}/refunds', [OrderController::class, 'recordRefund'])->name('refunds');
+    Route::post('/{order}/cod-paid', [OrderController::class, 'markCodPaid'])->name('cod-paid');
+  });
+
 });
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])
-->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'can:access-admin'])
+    ->group(function () {
 
     // Route::get('/dashboard', function () {
     //     return view('dashboard');
     // })->name('dashboard');
 
-    Route::get('/dashboard', [AdminController::class, 'index']); // ✅ Changed
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::resource('banners', BannerController::class)->except(['show']);
 
 

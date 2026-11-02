@@ -103,6 +103,7 @@ Version         : 1.0
         autoplayHoverPause: true,
         autoplayTimeout: 5000,
         items: 1,
+        autoHeight: true,
         responsiveRefreshRate: 100,
         navText: [
             "<i class='far fa-angle-left'></i>",
@@ -119,6 +120,9 @@ Version         : 1.0
         doAnimations($firstAnimatingElements);
         }
     });
+        $slider.find('img').on('load', function () {
+            $slider.trigger('refresh.owl.carousel');
+        });
     });
 
     //hero slider do animations

@@ -12,10 +12,7 @@ class BannerController extends Controller
 {
     public function index()
     {
-        $banners = Banner::query()
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->paginate(10);
+        $banners = Banner::query()->orderBy('placement')->orderBy('sort_order')->orderBy('id')->paginate(10);
 
         return view('backend.banner.index', compact('banners'));
     }
@@ -27,19 +24,28 @@ class BannerController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'link_url' => ['nullable', 'string', 'max:2048', $this->linkUrlRule()],
-            'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
-            'is_active' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validate($this->rules(true));
+        $stored = [];
 
-        $validated['image'] = $this->storeImage($request);
-        $validated['sort_order'] = $validated['sort_order'] ?? 0;
-        $validated['is_active'] = $request->boolean('is_active');
+        try {
+            [$validated['image'], $validated['image_width'], $validated['image_height']] = $this->storeImage($request, 'image');
+            $stored[] = $validated['image'];
 
-        Banner::create($validated);
+            if ($request->hasFile('mobile_image')) {
+                [$validated['mobile_image'], $validated['mobile_image_width'], $validated['mobile_image_height']] = $this->storeImage($request, 'mobile_image');
+                $stored[] = $validated['mobile_image'];
+            }
+
+            $validated['sort_order'] = $validated['sort_order'] ?? 0;
+            $validated['is_active'] = $request->boolean('is_active');
+            Banner::create($validated);
+        } catch (\Throwable $exception) {
+            foreach ($stored as $path) {
+                $this->deleteUploadedImage($path);
+            }
+
+            throw $exception;
+        }
 
         return redirect()->route('banners.index')->with('success', 'Banner added successfully.');
     }
@@ -51,26 +57,49 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
     {
-        $validated = $request->validate([
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'link_url' => ['nullable', 'string', 'max:2048', $this->linkUrlRule()],
-            'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
-            'is_active' => ['required', 'boolean'],
-        ]);
+        $validated = $request->validate($this->rules(false));
+        $replaced = [];
+        $stored = [];
 
-        if ($request->hasFile('image')) {
-            $newImage = $this->storeImage($request);
-            $oldImage = $banner->image;
-            $validated['image'] = $newImage;
+        if ($request->boolean('remove_mobile_image') && ! $request->hasFile('mobile_image')) {
+            if ($banner->mobile_image) {
+                $replaced[] = $banner->mobile_image;
+            }
+            $validated['mobile_image'] = null;
+            $validated['mobile_image_width'] = null;
+            $validated['mobile_image_height'] = null;
+        }
+        unset($validated['remove_mobile_image']);
+
+        try {
+            foreach (['image', 'mobile_image'] as $field) {
+                if (! $request->hasFile($field)) {
+                    continue;
+                }
+
+                [$path, $width, $height] = $this->storeImage($request, $field);
+                $stored[] = $path;
+                $replaced[] = $banner->{$field};
+                $validated[$field] = $path;
+                $validated[$field.'_width'] = $width;
+                $validated[$field.'_height'] = $height;
+            }
+
+            $validated['sort_order'] = $validated['sort_order'] ?? 0;
+            $validated['is_active'] = $request->boolean('is_active');
+            $banner->update($validated);
+        } catch (\Throwable $exception) {
+            foreach ($stored as $path) {
+                $this->deleteUploadedImage($path);
+            }
+
+            throw $exception;
         }
 
-        $validated['sort_order'] = $validated['sort_order'] ?? 0;
-        $validated['is_active'] = $request->boolean('is_active');
-        $banner->update($validated);
-
-        if (isset($oldImage)) {
-            $this->deleteUploadedImage($oldImage);
+        foreach ($replaced as $path) {
+            if ($path) {
+                $this->deleteIfUnused($path);
+            }
         }
 
         return redirect()->route('banners.index')->with('success', 'Banner updated successfully.');
@@ -78,23 +107,49 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner)
     {
-        $image = $banner->image;
+        $images = array_filter([$banner->image, $banner->mobile_image]);
         $banner->delete();
-        $this->deleteUploadedImage($image);
+
+        foreach ($images as $path) {
+            $this->deleteIfUnused($path);
+        }
 
         return redirect()->route('banners.index')->with('success', 'Banner deleted successfully.');
     }
 
-    private function storeImage(Request $request): string
+    private function rules(bool $creating): array
+    {
+        return [
+            'image' => [$creating ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'mobile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_mobile_image' => ['sometimes', 'boolean'],
+            'placement' => ['required', 'string', 'in:'.implode(',', array_keys(Banner::PLACEMENTS))],
+            'title' => ['nullable', 'string', 'max:160'],
+            'subtitle' => ['nullable', 'string', 'max:2000'],
+            'cta_text' => ['nullable', 'string', 'max:80'],
+            'alt_text' => ['nullable', 'string', 'max:255'],
+            'link_url' => ['nullable', 'string', 'max:2048', $this->linkUrlRule()],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'is_active' => ['required', 'boolean'],
+        ];
+    }
+
+    /** @return array{string, int, int} */
+    private function storeImage(Request $request, string $field): array
     {
         $directory = public_path('uploads/banners');
         File::ensureDirectoryExists($directory);
 
-        $image = $request->file('image');
+        $image = $request->file($field);
+        $dimensions = @getimagesize($image->getPathname());
+        if (! $dimensions || empty($dimensions[0]) || empty($dimensions[1])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([$field => 'The selected file is not a valid image.']);
+        }
+
         $filename = Str::uuid().'.'.$image->extension();
         $image->move($directory, $filename);
 
-        return 'uploads/banners/'.$filename;
+        return ['uploads/banners/'.$filename, (int) $dimensions[0], (int) $dimensions[1]];
     }
 
     private function linkUrlRule(): \Closure
@@ -115,6 +170,14 @@ class BannerController extends Controller
                 $fail('Enter a valid http/https URL or an internal path such as /shop.');
             }
         };
+    }
+
+    private function deleteIfUnused(string $path): void
+    {
+        $stillReferenced = Banner::query()->where('image', $path)->orWhere('mobile_image', $path)->exists();
+        if (! $stillReferenced) {
+            $this->deleteUploadedImage($path);
+        }
     }
 
     private function deleteUploadedImage(string $path): void

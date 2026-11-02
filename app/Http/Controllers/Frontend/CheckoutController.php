@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderEvent;
 use App\Models\User;
 use App\Services\AccountAccessService;
 use App\Services\RazorpayGateway;
+use App\Services\OrderWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -95,7 +97,8 @@ class CheckoutController extends Controller
             return back()->withInput()->with('checkout_error', 'The payable amount is below ₹1. Choose Cash on Delivery for this order.');
         }
 
-        $order = $this->createLocalOrder($customer, $items, $subtotal, $discount, $coupon?->code, $total);
+        $order = $this->createLocalOrder($customer, $items, $subtotal, $discount, $coupon?->code, $total, $request);
+        app(OrderWorkflowService::class)->notifyStaff($order, 'New order '.$order->order_number.' placed; review payment and fulfilment.');
 
         if ($customer['payment_method'] === 'cod') {
             $request->session()->forget(['hom_cart', 'hom_coupon']);
@@ -114,6 +117,8 @@ class CheckoutController extends Controller
         } catch (Throwable $exception) {
             report($exception);
             $order->update(['status' => 'payment_error', 'payment_status' => 'failed']);
+            OrderEvent::create(['order_id' => $order->id, 'type' => 'payment', 'from_status' => 'pending', 'to_status' => 'failed', 'message' => 'Online payment could not be started.', 'is_internal' => false]);
+            app(OrderWorkflowService::class)->notifyStaff($order->fresh(), 'Online payment could not start for order '.$order->order_number.'.');
 
             return back()->withInput()->with('checkout_error', 'Razorpay could not start the payment. Please retry or choose Cash on Delivery.');
         }
@@ -166,6 +171,7 @@ class CheckoutController extends Controller
         if (!$this->markOrderPaid($order, $data['razorpay_payment_id'])) {
             return response()->json(['message' => 'This order has already been paid with a different transaction. Please contact support.'], 409);
         }
+        app(OrderWorkflowService::class)->notifyStaff($order->fresh(), 'Payment captured for order '.$order->order_number.'.');
         $this->queuePostOrderEmail($order, $request, app(AccountAccessService::class));
         $request->session()->forget(['hom_cart', 'hom_coupon']);
 
@@ -192,11 +198,15 @@ class CheckoutController extends Controller
             if ((int) ($payment['amount'] ?? 0) !== (int) round((float) $order->total * 100) || ($payment['currency'] ?? '') !== 'INR') {
                 return response('Payment amount mismatch', 400);
             }
-            if ($this->markOrderPaid($order, (string) $payment['id'])) {
+            if ($order->payment_status !== 'paid' && $this->markOrderPaid($order, (string) $payment['id'])) {
+                app(OrderWorkflowService::class)->notifyStaff($order->fresh(), 'Payment captured for order '.$order->order_number.'.');
                 $this->queuePostOrderEmail($order, $request, app(AccountAccessService::class), false);
             }
         } elseif ($event === 'payment.failed' && $order->payment_status !== 'paid') {
-            $order->update(['payment_status' => 'failed', 'status' => 'payment_failed']);
+            $newFailure = $order->payment_status !== 'failed';
+            $order->update(['payment_status' => 'failed']);
+            OrderEvent::firstOrCreate(['order_id'=>$order->id,'type'=>'payment','to_status'=>'failed','message'=>'Payment provider reported a failed attempt.'], ['from_status'=>$order->status,'is_internal'=>false,'metadata'=>['provider'=>'razorpay']]);
+            if ($newFailure) app(OrderWorkflowService::class)->notifyStaff($order, 'Payment failed for order '.$order->order_number.'.');
         }
 
         return response('OK', 200);
@@ -215,14 +225,16 @@ class CheckoutController extends Controller
         return view('frontend.shop.order-success', compact('order', 'invoiceUrl', 'invoicePdfUrl', 'verifyUrl', 'resendUrl', 'canVerifyEmail', 'isSignedIntoOrderAccount'));
     }
 
-    private function createLocalOrder(array $customer, $items, float $subtotal, float $discount, ?string $couponCode, float $total): Order
+    private function createLocalOrder(array $customer, $items, float $subtotal, float $discount, ?string $couponCode, float $total, Request $request): Order
     {
-        return DB::transaction(function () use ($customer, $items, $subtotal, $discount, $couponCode, $total) {
+        return DB::transaction(function () use ($customer, $items, $subtotal, $discount, $couponCode, $total, $request) {
             do {
                 $orderNumber = 'HOM-'.now()->format('ymd').'-'.Str::upper(Str::random(7));
             } while (Order::where('order_number', $orderNumber)->exists());
 
             $isCod = $customer['payment_method'] === 'cod';
+            $attribution = (array) $request->session()->get('hom_attribution', []);
+            $source = $this->orderSource($attribution);
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'user_id' => auth()->id(),
@@ -241,8 +253,15 @@ class CheckoutController extends Controller
                 'currency' => 'INR',
                 'payment_method' => $customer['payment_method'],
                 'payment_status' => $isCod ? 'pending_cod' : 'pending',
-                'status' => $isCod ? 'placed' : 'payment_pending',
+                'status' => $isCod ? 'pending_approval' : 'payment_pending',
+                'source' => $source,
+                'utm_source' => $attribution['utm_source'] ?? null,
+                'utm_medium' => $attribution['utm_medium'] ?? null,
+                'utm_campaign' => $attribution['utm_campaign'] ?? null,
+                'utm_content' => $attribution['utm_content'] ?? null,
+                'referrer_url' => $attribution['referrer_url'] ?? null,
             ]);
+            OrderEvent::create(['order_id'=>$order->id,'type'=>'order_placed','from_status'=>null,'to_status'=>$order->status,'message'=>'Order received.','is_internal'=>false,'metadata'=>['source'=>$source]]);
 
             foreach ($items as $item) {
                 OrderItem::create([
@@ -271,15 +290,31 @@ class CheckoutController extends Controller
                 if ($lockedOrder->razorpay_payment_id !== $paymentId) logger()->warning('A different payment was reported for an already paid order.', ['order_number' => $lockedOrder->order_number, 'payment_id' => $paymentId]);
                 return $lockedOrder->razorpay_payment_id === $paymentId;
             }
+            $fromStatus = $lockedOrder->status;
             $lockedOrder->update([
                 'razorpay_payment_id' => $paymentId,
                 'payment_status' => 'paid',
-                'status' => 'confirmed',
+                'status' => $lockedOrder->status === 'payment_pending' ? 'pending_approval' : $lockedOrder->status,
                 'paid_at' => now(),
             ]);
+            OrderEvent::create(['order_id'=>$lockedOrder->id,'type'=>'payment','from_status'=>'pending','to_status'=>'paid','message'=>'Payment captured successfully.','is_internal'=>false,'metadata'=>['provider'=>'razorpay']]);
+            if ($fromStatus === 'payment_pending') OrderEvent::create(['order_id'=>$lockedOrder->id,'type'=>'status','from_status'=>$fromStatus,'to_status'=>'pending_approval','message'=>'Payment captured; order is awaiting fulfilment review.','is_internal'=>false]);
 
             return true;
         });
+    }
+
+    private function orderSource(array $attribution): string
+    {
+        $utm = strtolower((string) ($attribution['utm_source'] ?? ''));
+        $referrer = strtolower((string) ($attribution['referrer_url'] ?? ''));
+        $candidate = $utm ?: $referrer;
+        foreach (['google'=>'Google','facebook'=>'Facebook','instagram'=>'Instagram','whatsapp'=>'WhatsApp','mail.google'=>'Email Campaign','email'=>'Email Campaign'] as $needle => $label) {
+            if ($candidate !== '' && str_contains($candidate, $needle)) return $label;
+        }
+        if ($utm !== '') return 'Other Campaign';
+        if ($referrer !== '') return 'Referral';
+        return 'Direct';
     }
 
     private function validateCurrentStock($items): void

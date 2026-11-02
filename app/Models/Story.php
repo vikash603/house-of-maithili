@@ -60,9 +60,14 @@ class Story extends Model
     public function thumbnailUrl(): ?string
     {
         if ($this->thumbnail) {
-            return asset($this->thumbnail);
+            return is_file(public_path($this->thumbnail)) ? asset($this->thumbnail) : $this->youtubeThumbnailUrl();
         }
 
+        return $this->youtubeThumbnailUrl();
+    }
+
+    private function youtubeThumbnailUrl(): ?string
+    {
         $id = $this->youtubeVideoId();
 
         return $id ? 'https://img.youtube.com/vi/'.$id.'/hqdefault.jpg' : null;

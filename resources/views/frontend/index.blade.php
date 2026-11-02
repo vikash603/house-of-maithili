@@ -5,36 +5,17 @@
     <main class="main">
 
         <!-- hero slider -->
-        <section class="hero-section hs-1 maithili-hero {{ isset($banners) && $banners->where('is_active', true)->count() > 1 ? 'has-multiple-banners' : '' }}" id="hero" aria-label="House Of Maithili introduction">
-            @php
-                $activeBanners = isset($banners) ? $banners->where('is_active', true) : collect();
-            @endphp
-            @if ($activeBanners->isNotEmpty())
+        @if($heroBanners->isNotEmpty())
+            <section class="hero-section hs-1 maithili-hero {{ $heroBanners->count() > 1 ? 'has-multiple-banners' : '' }}" id="hero" aria-label="House Of Maithili introduction">
                 <div class="hero-slider owl-carousel owl-theme maithili-hero-slider">
-                    @foreach ($activeBanners as $banner)
+                    @foreach ($heroBanners as $banner)
                         <div class="hero-single maithili-hero-slide">
-                            <div class="maithili-hero-photo">
-                                @if ($banner->link_url)
-                                    <a href="{{ str_starts_with($banner->link_url, '/') ? url(ltrim($banner->link_url, '/')) : $banner->link_url }}" aria-label="{{ $banner->alt_text ?: 'Open banner destination' }}">
-                                        <img src="{{ asset($banner->image) }}" alt="{{ $banner->alt_text ?? '' }}">
-                                    </a>
-                                @else
-                                    <img src="{{ asset($banner->image) }}" alt="{{ $banner->alt_text ?? '' }}">
-                                @endif
-                            </div>
+                            @include('frontend.partials.home-banner', ['banner' => $banner, 'class' => 'maithili-hero-photo', 'loading' => $loop->first ? 'eager' : 'lazy'])
                         </div>
                     @endforeach
                 </div>
-            @elseif (! isset($banners) || $banners->isEmpty())
-                <div class="hero-slider owl-carousel owl-theme maithili-hero-slider">
-                    <div class="hero-single maithili-hero-slide">
-                        <div class="maithili-hero-photo" aria-hidden="true">
-                            <img src="{{ asset('frontend/images/Serene Saree Portrait in Heritage Architecture.png') }}" alt="">
-                        </div>
-                    </div>
-                </div>
-            @endif
-        </section>
+            </section>
+        @endif
         <!-- hero slider end -->
 
         <!-- Home page highlights are managed from the admin panel -->
@@ -62,27 +43,18 @@
         <section class="maithili-shop-by-category" aria-labelledby="maithili-shop-category-title">
             <div class="container">
                 <div class="maithili-shop-category-heading">
+                    <span class="maithili-section-eyebrow">HANDCRAFTED FOR EVERY MOMENT</span>
                     <h2 id="maithili-shop-category-title">Shop by Category</h2>
-                    <div class="maithili-shop-category-controls" aria-label="Category slider controls">
-                        <button type="button" class="maithili-category-prev" aria-label="Previous categories">‹</button>
-                        <button type="button" class="maithili-category-next" aria-label="Next categories">›</button>
-                    </div>
                 </div>
-                <div class="maithili-shop-category-list" tabindex="0" aria-label="Fashion categories; use the arrows or swipe to browse">
+                <div class="maithili-shop-category-list" aria-label="Shop handcrafted categories">
                     @forelse($shopCategories as $category)
-                        @php
-                            $categoryImagePath = $category->image
-                                ? public_path('uploads/category/'.$category->image)
-                                : null;
-                        @endphp
-                        <a class="maithili-shop-category-card" href="{{ route('shop.index', ['category' => $category->slug ?: \Illuminate\Support\Str::slug($category->name)]) }}">
-                            @if($categoryImagePath && is_file($categoryImagePath))
-                                <img class="maithili-shop-category-image" src="{{ asset('uploads/category/'.$category->image) }}" alt="{{ $category->name }} category">
+                        <a class="maithili-shop-category-card" data-category="{{ $category['slug'] }}" href="{{ route('shop.index', array_filter(['category' => $category['category_slug'] ?: $category['slug'], 'subcategory' => $category['subcategory_slug']])) }}" @if(!$category['category_exists']) aria-label="{{ $category['name'] }}; collection coming soon" @endif>
+                            @if($category['image'])
+                                <span class="maithili-shop-category-image-wrap"><img class="maithili-shop-category-image" src="{{ $category['image'] }}" alt="{{ $category['name'] }}" loading="lazy"></span>
                             @else
-                                <span class="maithili-shop-category-placeholder" role="img" aria-label="Category image pending for {{ $category->name }}"><span>{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($category->name, 0, 1)) }}</span></span>
-                                <span class="maithili-category-photo-note">Photo pending</span>
+                                <span class="maithili-shop-category-placeholder" role="img" aria-label="{{ $category['name'] }} image coming soon"><span>{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($category['name'], 0, 1)) }}</span></span>
                             @endif
-                            <span class="maithili-shop-category-name">{{ $category->name }}</span>
+                            <span class="maithili-shop-category-name">{{ $category['name'] }}</span>
                         </a>
                     @empty
                         <p class="maithili-shop-category-empty">Categories will be added soon.</p>
@@ -91,46 +63,107 @@
             </div>
         </section>
 
-        <!-- Institutional client logos -->
-        <section class="maithili-institutional-clients" aria-labelledby="maithili-clients-title">
-            <div class="container maithili-clients-inner">
-                <header class="maithili-clients-heading">
-                    <h2 id="maithili-clients-title">Our Esteemed Institutional Clients</h2>
-                    <p class="maithili-clients-subtitle">Proud to have created handcrafted products for leading institutions and government organizations.</p>
-                </header>
-                @php
-                    $institutionalLogos = [
-                        ['name' => 'India Post', 'file' => 'India_Post_Logo_potools.webp'],
-                        ['name' => 'State Bank of India (SBI)', 'file' => 'images-sbi.png'],
-                        ['name' => 'HP Gas', 'file' => 'hp-gas.png'],
-                        ['name' => 'District Administration Kishanganj, Government of Bihar', 'file' => 'image_c34d60dc (1).jpg'],
-                    ];
-                    $hasInstitutionalLogos = false;
-                    foreach ($institutionalLogos as $logo) {
-                        if (is_file(public_path('frontend/images/' . $logo['file']))) {
-                            $hasInstitutionalLogos = true;
-                            break;
-                        }
-                    }
-                @endphp
-                @if ($hasInstitutionalLogos)
-                    <ul class="maithili-client-logo-list" aria-label="Institutional client logos">
-                        @foreach ($institutionalLogos as $logo)
-                            @if (is_file(public_path('frontend/images/' . $logo['file'])))
-                                <li class="maithili-client-logo-item">
-                                    <img src="{{ asset('frontend/images/' . $logo['file']) }}" alt="{{ $logo['name'] }}" loading="lazy">
-                                </li>
-                            @endif
+                   <!-- House Of Maithili bestsellers -->
+        <section class="maithili-bestsellers py-80" id="maithili-bestsellers" aria-labelledby="maithili-bestsellers-title">
+            <div class="container">
+                <div class="maithili-section-heading">
+                    <span class="maithili-section-eyebrow">THE HOUSE OF MAITHILI EDIT</span>
+                    <h2 id="maithili-bestsellers-title">NEW ARRIVALS</h2>
+                    <p>Discover handcrafted favourites, thoughtfully made by our artisan community.</p>
+                </div>
+                @if(isset($bestsellers) && $bestsellers->isNotEmpty())
+                    @if(session('cart_success'))<p class="maithili-bestseller-notice" role="status">{{ session('cart_success') }} <a href="{{ route('cart.index') }}">View your bag</a></p>@endif
+                    <div class="maithili-product-grid">
+                        @foreach($bestsellers as $product)
+                            @php
+                                $bestsellerImage = $product->thumbnail && is_file(public_path('uploads/products/'.$product->thumbnail))
+                                    ? asset('uploads/products/'.$product->thumbnail)
+                                    : ($product->images->first() && is_file(public_path('uploads/products/'.$product->images->first()->image))
+                                        ? asset('uploads/products/'.$product->images->first()->image)
+                                        : null);
+                                $bestsellerPrice = (float) ($product->sale_price ?: $product->price);
+                            @endphp
+                            <article class="maithili-product-card">
+                                <div class="maithili-product-image">
+                                    <a class="maithili-product-image-link" href="{{ route('shop.products.show', $product->slug) }}" aria-label="View {{ $product->name }}">
+                                    @if($bestsellerImage)
+                                        <img src="{{ $bestsellerImage }}" alt="{{ $product->name }}" loading="lazy">
+                                    @else
+                                        <div class="maithili-product-image-pending" role="img" aria-label="Product image pending"><span>Product image pending</span></div>
+                                    @endif
+                                    </a>
+                                    <span class="maithili-product-badge">{{ $product->is_made_to_order ? 'Made to order' : 'Handcrafted' }}</span>
+                                </div>
+                                <div class="maithili-product-info">
+                                    <p class="maithili-product-category">{{ $product->category->name }}</p>
+                                    <h3><a href="{{ route('shop.products.show', $product->slug) }}">{{ $product->name }}</a></h3>
+                                    <div class="maithili-product-prices">
+                                        <strong data-current-price>₹{{ number_format($bestsellerPrice, 2) }}</strong>
+                                        @if($product->sale_price)<del data-original-price>₹{{ number_format((float) $product->price, 2) }}</del>@else<del data-original-price hidden></del>@endif
+                                    </div>
+                                    <form class="maithili-bestseller-form" method="POST" action="{{ route('cart.add') }}" data-bestseller-form>
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        @if($product->variants->isNotEmpty())
+                                            <label class="visually-hidden" for="bestseller-variant-{{ $product->id }}">Choose a size or colour for {{ $product->name }}</label>
+                                            <select class="maithili-variant-select" id="bestseller-variant-{{ $product->id }}" name="variant_id" required data-bestseller-variant>
+                                                <option value="">Choose size / colour</option>
+                                                @foreach($product->variants as $variant)
+                                                    @php
+                                                        $variantLabel = collect([$variant->size, $variant->color])->filter()->join(' · ');
+                                                        $variantPrice = (float) ($variant->sale_price ?: $variant->price ?: $product->sale_price ?: $product->price);
+                                                        $variantOriginalPrice = (float) ($variant->price ?: $product->price);
+                                                    @endphp
+                                                    <option value="{{ $variant->id }}" data-price="{{ $variantPrice }}" data-original="{{ $variantOriginalPrice }}" @disabled(!$product->is_made_to_order && $variant->stock < 1)>
+                                                        {{ $variantLabel ?: 'Option '.$loop->iteration }}{{ !$product->is_made_to_order && $variant->stock < 1 ? ' · Out of stock' : '' }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        @endif
+                                        <div class="maithili-product-actions">
+                                            <button type="submit" class="maithili-add-to-bag" @disabled($product->variants->isNotEmpty())>Add to Bag</button>
+                                            <button type="submit" class="maithili-buy-now" formaction="{{ route('cart.buy-now') }}" @disabled($product->variants->isNotEmpty())>Buy Now</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </article>
                         @endforeach
-                    </ul>
+                    </div>
+                @else
+                    <div class="maithili-data-pending" role="status">No active products are available yet. Add an active product with ready stock or enable made-to-order in the catalogue to display it here.</div>
                 @endif
             </div>
         </section>
+        <!-- House Of Maithili bestsellers end -->
+
+        <script>
+        document.querySelectorAll('[data-bestseller-variant]').forEach((select) => {
+            const form = select.closest('[data-bestseller-form]');
+            const card = select.closest('.maithili-product-card');
+            const buttons = form.querySelectorAll('button[type="submit"]');
+            const price = card.querySelector('[data-current-price]');
+            const original = card.querySelector('[data-original-price]');
+            const updateSelection = () => {
+                const option = select.selectedOptions[0];
+                const selected = Boolean(select.value) && !option.disabled;
+                buttons.forEach((button) => button.disabled = !selected);
+                if (!selected) return;
+                const amount = Number(option.dataset.price);
+                const regular = Number(option.dataset.original);
+                price.textContent = '₹' + amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                original.textContent = '₹' + regular.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                original.hidden = amount >= regular;
+            };
+            select.addEventListener('change', updateSelection);
+            updateSelection();
+        });
+        </script>
+
 
         <!-- Artisan and impact stories -->
         @if(isset($stories) && $stories->isNotEmpty())
         <section class="maithili-stories" aria-labelledby="maithili-stories-title">
-            <a class="maithili-watch-all-overlay" href="https://www.youtube.com/@HouseofMaithili" target="_blank" rel="noopener noreferrer" aria-label="Watch all videos on the House Of Maithili YouTube channel"></a>
             <div class="container">
                 <div class="maithili-stories-layout">
                     <div class="maithili-stories-intro">
@@ -147,7 +180,7 @@
                                     data-story-url="{{ $story->video_type === 'youtube' ? $story->youtubeEmbedUrl() : asset($story->video_file) }}"
                                     data-story-title="{{ $story->title }}"
                                     aria-label="Play {{ $story->title }}">
-                                    @if($story->thumbnailUrl())<img src="{{ $story->thumbnailUrl() }}" alt="" loading="lazy">@endif
+                                    @if($story->thumbnailUrl())<img src="{{ $story->thumbnailUrl() }}" alt="" loading="lazy">@else<span class="maithili-story-thumb-placeholder" aria-hidden="true">House of Maithili</span>@endif
                                     <span class="maithili-story-play" aria-hidden="true">▶</span>
                                 </button>
                                 <h3>{{ $story->title }}</h3>
@@ -203,56 +236,83 @@
         </script>
         @endif
 
-                <!-- House Of Maithili bestsellers -->
-        <section class="maithili-bestsellers py-80" id="maithili-bestsellers" aria-labelledby="maithili-bestsellers-title">
-            <div class="container">
-                <div class="maithili-section-heading">
-                    <span class="maithili-section-eyebrow">THE HOUSE OF MAITHILI EDIT</span>
-                    <h2 id="maithili-bestsellers-title">Bestsellers</h2>
-                    <p>Discover handcrafted favourites, thoughtfully made by our artisan community.</p>
+        <!-- THE SIGNATURE EDIT: supplied campaign artwork links to the Sarees collection -->
+        @php
+            $sareeCategory = $shopCategories->first(fn ($category) => $category['name'] === 'Sarees' && $category['category_exists']);
+            $sareeUrl = $sareeCategory
+                ? route('shop.index', array_filter(['category' => $sareeCategory['category_slug'] ?: $sareeCategory['slug'], 'subcategory' => $sareeCategory['subcategory_slug']]))
+                : route('shop.index');
+        @endphp
+        @if($signatureBanner)
+            <section class="maithili-signature-edit" aria-labelledby="maithili-signature-title">
+                <div class="container">
+                    <div class="maithili-section-heading">
+                        <span class="maithili-section-eyebrow">THE SIGNATURE EDIT</span>
+                        <h2 id="maithili-signature-title" class="visually-hidden">{{ $signatureBanner->title ?: 'The Artisan’s Collection' }}</h2>
+                    </div>
                 </div>
-                @if(isset($bestsellers) && $bestsellers->isNotEmpty())
-                    @if(session('cart_success'))<p class="maithili-bestseller-notice" role="status">{{ session('cart_success') }} <a href="{{ route('cart.index') }}">View your bag</a></p>@endif
-                    <div class="maithili-product-grid">
-                        @foreach($bestsellers as $product)
+                @include('frontend.partials.home-banner', ['banner' => $signatureBanner, 'class' => 'maithili-campaign-banner maithili-signature-banner', 'destinationFallback' => $sareeUrl])
+            </section>
+        @endif
+
+        <!-- Featured Sarees: active, available products from the Sarees category only -->
+        <section class="maithili-featured-sarees" aria-labelledby="maithili-featured-sarees-title">
+            <div class="container">
+                <header class="maithili-featured-sarees-heading">
+                    <span class="maithili-section-eyebrow">A HOUSE OF MAITHILI EDIT</span>
+                    <h2 id="maithili-featured-sarees-title">THE SIGNATURE COLLECTION</h2>
+                    <p>Discover Timeless Sarees, Handcrafted with Elegance</p>
+                </header>
+                @if($signatureSarees->isNotEmpty())
+                    <div class="maithili-product-grid maithili-signature-products-grid is-count-{{ min($signatureSarees->count(), 4) }}">
+                        @foreach($signatureSarees as $product)
                             @php
-                                $bestsellerImage = $product->thumbnail && is_file(public_path('uploads/products/'.$product->thumbnail))
+                                $signatureGalleryImage = $product->images->first(fn ($image) => is_file(public_path('uploads/products/'.$image->image)));
+                                $signatureImage = $product->thumbnail && is_file(public_path('uploads/products/'.$product->thumbnail))
                                     ? asset('uploads/products/'.$product->thumbnail)
-                                    : ($product->images->first() && is_file(public_path('uploads/products/'.$product->images->first()->image))
-                                        ? asset('uploads/products/'.$product->images->first()->image)
-                                        : null);
-                                $bestsellerPrice = (float) ($product->sale_price ?: $product->price);
+                                    : ($signatureGalleryImage ? asset('uploads/products/'.$signatureGalleryImage->image) : null);
+                                $regularPrice = (float) $product->price;
+                                $configuredSalePrice = (float) $product->sale_price;
+                                $hasValidDiscount = $configuredSalePrice > 0 && $regularPrice > $configuredSalePrice;
+                                $sellingPrice = $hasValidDiscount ? $configuredSalePrice : $regularPrice;
+                                $discountPercent = $hasValidDiscount ? (int) round((($regularPrice - $configuredSalePrice) / $regularPrice) * 100) : 0;
                             @endphp
-                            <article class="maithili-product-card">
+                            <article class="maithili-product-card maithili-signature-product-card">
                                 <div class="maithili-product-image">
                                     <a class="maithili-product-image-link" href="{{ route('shop.products.show', $product->slug) }}" aria-label="View {{ $product->name }}">
-                                    @if($bestsellerImage)
-                                        <img src="{{ $bestsellerImage }}" alt="{{ $product->name }}" loading="lazy">
-                                    @else
-                                        <div class="maithili-product-image-pending" role="img" aria-label="Product image pending"><span>Product image pending</span></div>
-                                    @endif
+                                        @if($signatureImage)
+                                            <img src="{{ $signatureImage }}" alt="{{ $product->name }}" loading="lazy">
+                                        @else
+                                            <div class="maithili-product-image-pending" role="img" aria-label="Product image pending"><span>Product image pending</span></div>
+                                        @endif
                                     </a>
-                                    <span class="maithili-product-badge">{{ $product->is_made_to_order ? 'Made to order' : 'Handcrafted' }}</span>
+                                    @if($discountPercent > 0)<span class="maithili-signature-discount">{{ $discountPercent }}% OFF</span>@endif
                                 </div>
                                 <div class="maithili-product-info">
-                                    <p class="maithili-product-category">{{ $product->category->name }}</p>
-                                    <h3><a href="{{ route('shop.products.show', $product->slug) }}">{{ $product->name }}</a></h3>
+                                    @if($product->subcategory)<p class="maithili-product-category">{{ $product->subcategory->name }}</p>@endif
+                                    <h3><a href="{{ route('shop.products.show', $product->slug) }}">{{ trim($product->name, " \t\n\r\0\x0B\"") }}</a></h3>
                                     <div class="maithili-product-prices">
-                                        <strong data-current-price>₹{{ number_format($bestsellerPrice, 2) }}</strong>
-                                        @if($product->sale_price)<del data-original-price>₹{{ number_format((float) $product->price, 2) }}</del>@else<del data-original-price hidden></del>@endif
+                                        <strong data-current-price>₹{{ number_format($sellingPrice, 2) }}</strong>
+                                        @if($hasValidDiscount)
+                                            <del data-original-price>₹{{ number_format($regularPrice, 2) }}</del>
+                                        @else
+                                            <del data-original-price hidden></del>
+                                        @endif
                                     </div>
                                     <form class="maithili-bestseller-form" method="POST" action="{{ route('cart.add') }}" data-bestseller-form>
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                                         <input type="hidden" name="quantity" value="1">
                                         @if($product->variants->isNotEmpty())
-                                            <label class="visually-hidden" for="bestseller-variant-{{ $product->id }}">Choose a size or colour for {{ $product->name }}</label>
-                                            <select class="maithili-variant-select" id="bestseller-variant-{{ $product->id }}" name="variant_id" required data-bestseller-variant>
+                                            <label class="visually-hidden" for="signature-variant-{{ $product->id }}">Choose a size or colour for {{ $product->name }}</label>
+                                            <select class="maithili-variant-select" id="signature-variant-{{ $product->id }}" name="variant_id" required data-bestseller-variant>
                                                 <option value="">Choose size / colour</option>
                                                 @foreach($product->variants as $variant)
-                                                    @php($variantLabel = collect([$variant->size, $variant->color])->filter()->join(' · '))
-                                                    @php($variantPrice = (float) ($variant->sale_price ?: $variant->price ?: $product->sale_price ?: $product->price))
-                                                    @php($variantOriginalPrice = (float) ($variant->price ?: $product->price))
+                                                    @php
+                                                        $variantLabel = collect([$variant->size, $variant->color])->filter()->join(' · ');
+                                                        $variantPrice = (float) ($variant->sale_price ?: $variant->price ?: $product->sale_price ?: $product->price);
+                                                        $variantOriginalPrice = (float) ($variant->price ?: $product->price);
+                                                    @endphp
                                                     <option value="{{ $variant->id }}" data-price="{{ $variantPrice }}" data-original="{{ $variantOriginalPrice }}" @disabled(!$product->is_made_to_order && $variant->stock < 1)>
                                                         {{ $variantLabel ?: 'Option '.$loop->iteration }}{{ !$product->is_made_to_order && $variant->stock < 1 ? ' · Out of stock' : '' }}
                                                     </option>
@@ -269,37 +329,29 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="maithili-data-pending" role="status">No active products are available yet. Add an active product with ready stock or enable made-to-order in the catalogue to display it here.</div>
+                    <div class="maithili-data-pending" role="status">Our Sarees collection is being curated. Please check back soon.</div>
                 @endif
+                <div class="maithili-signature-collection-action">
+                    <a class="maithili-editorial-button" href="{{ $sareeUrl }}">Explore Saree Collection <span aria-hidden="true">→</span></a>
+                </div>
             </div>
         </section>
-        <!-- House Of Maithili bestsellers end -->
 
-        <script>
-        document.querySelectorAll('[data-bestseller-variant]').forEach((select) => {
-            const form = select.closest('[data-bestseller-form]');
-            const card = select.closest('.maithili-product-card');
-            const buttons = form.querySelectorAll('button[type="submit"]');
-            const price = card.querySelector('[data-current-price]');
-            const original = card.querySelector('[data-original-price]');
-            const updateSelection = () => {
-                const option = select.selectedOptions[0];
-                const selected = Boolean(select.value) && !option.disabled;
-                buttons.forEach((button) => button.disabled = !selected);
-                if (!selected) return;
-                const amount = Number(option.dataset.price);
-                const regular = Number(option.dataset.original);
-                price.textContent = '₹' + amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                original.textContent = '₹' + regular.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                original.hidden = amount >= regular;
-            };
-            select.addEventListener('change', updateSelection);
-            updateSelection();
-        });
-        </script>
+        <!-- Supplied Bihar Makhana campaign artwork links to the dedicated product listing -->
+        @if($makhanaBanner)
+            <section class="maithili-makhana" aria-label="{{ $makhanaBanner->title ?: 'Makhana collection' }}">
+                @include('frontend.partials.home-banner', ['banner' => $makhanaBanner, 'class' => 'maithili-campaign-banner maithili-makhana-banner'])
+            </section>
+        @endif
 
-                <!-- House Of Maithili impact -->
-        <section class="maithili-impact" id="maithili-impact" aria-labelledby="maithili-impact-title">
+        @foreach($promotionalBanners as $promotionalBanner)
+            @include('frontend.partials.home-banner', ['banner' => $promotionalBanner, 'class' => 'maithili-campaign-banner maithili-promotional-banner'])
+        @endforeach
+
+
+
+                        <!-- House Of Maithili impact -->
+        <!-- <section class="maithili-impact" id="maithili-impact" aria-labelledby="maithili-impact-title">
             <div class="container">
                 <div class="maithili-impact-accessible-content">
                     <h2 id="maithili-impact-title">More Than Fashion, A Bigger Purpose</h2>
@@ -312,23 +364,8 @@
                     </ul>
                 </div>
             </div>
-        </section>
+        </section> -->
         <!-- House Of Maithili impact end -->
-
-        <!-- Publication logos supplied for the approved media strip -->
-        <section class="maithili-media-mentions" id="maithili-as-seen-in" aria-labelledby="maithili-media-title">
-            <div class="container">
-                <div class="maithili-section-heading">
-                    <span class="maithili-section-eyebrow">PRESS &amp; FEATURES</span>
-                    <h2 id="maithili-media-title">As Seen In</h2>
-                </div>
-                <ul class="maithili-media-list" aria-label="Featured publications">
-                    <li><img src="{{ asset('frontend/images/mid-day-squarelogo_d.webp') }}" alt="Mid-Day" loading="lazy"></li>
-                    <li><img src="{{ asset('frontend/images/Aaj_tak_logo.png') }}" alt="Aaj Tak" loading="lazy"></li>
-                    <li><img src="{{ asset('frontend/images/Dd-news_logo.png') }}" alt="DD News" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
 
         <!-- Approved customer testimonials managed in the admin panel -->
         <section class="maithili-testimonials" id="maithili-testimonials" aria-labelledby="maithili-testimonials-title">
@@ -367,6 +404,54 @@
                     @empty
                         <p class="maithili-testimonial-empty">Customer stories will appear here as reviews are approved.</p>
                     @endforelse
+                </div>
+            </div>
+        </section>
+        <!-- Institutional clients and press features -->
+        <section class="maithili-trust-strip" aria-label="Institutional clients and press features">
+            <div class="container maithili-trust-layout">
+                <div class="maithili-trust-column maithili-trust-clients" aria-labelledby="maithili-clients-title">
+                    <header class="maithili-clients-heading">
+                        <h2 id="maithili-clients-title">Our Esteemed Institutional Clients</h2>
+                        <p class="maithili-clients-subtitle">Proud to have created handcrafted products for leading institutions and government organizations.</p>
+                    </header>
+                    @php
+                        $institutionalLogos = [
+                            ['name' => 'India Post', 'file' => 'India_Post_Logo_potools.webp'],
+                            ['name' => 'State Bank of India (SBI)', 'file' => 'images-sbi.png'],
+                            ['name' => 'HP Gas', 'file' => 'hp-gas.png'],
+                            ['name' => 'District Administration Kishanganj, Government of Bihar', 'file' => 'image_c34d60dc (1).PNG'],
+                        ];
+                        $hasInstitutionalLogos = false;
+                        foreach ($institutionalLogos as $logo) {
+                            if (is_file(public_path('frontend/images/' . $logo['file']))) {
+                                $hasInstitutionalLogos = true;
+                                break;
+                            }
+                        }
+                    @endphp
+                    @if ($hasInstitutionalLogos)
+                        <ul class="maithili-client-logo-list" aria-label="Institutional client logos">
+                            @foreach ($institutionalLogos as $logo)
+                                @if (is_file(public_path('frontend/images/' . $logo['file'])))
+                                    <li class="maithili-client-logo-item">
+                                        <img src="{{ asset('frontend/images/' . $logo['file']) }}" alt="{{ $logo['name'] }}" loading="lazy">
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+                <div class="maithili-trust-column maithili-trust-press" id="maithili-as-seen-in" aria-labelledby="maithili-media-title">
+                    <header class="maithili-section-heading">
+                        <!-- <span class="maithili-section-eyebrow">PRESS &amp; FEATURES</span> -->
+                        <h2 id="maithili-media-title">As Seen on</h2>
+                    </header>
+                    <ul class="maithili-media-list" aria-label="Featured publications">
+                        <li><img src="{{ asset('frontend/images/mid-day-squarelogo_d.PNG') }}" alt="Mid-Day" loading="lazy"></li>
+                        <li><img src="{{ asset('frontend/images/Aaj_tak_logo.png') }}" alt="Aaj Tak" loading="lazy"></li>
+                        <li><img src="{{ asset('frontend/images/Dd-news_logo.png') }}" alt="DD News" loading="lazy"></li>
+                    </ul>
                 </div>
             </div>
         </section>

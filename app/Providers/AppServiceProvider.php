@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Category;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('access-admin', fn ($user) => $user->canAccessAdmin());
+        Gate::define('manage-orders', fn ($user) => $user->canManageOrders());
         View::composer('frontend.layout.app', function ($view): void {
             try {
                 $view->with('navCategories', Category::query()
@@ -33,6 +36,18 @@ class AppServiceProvider extends ServiceProvider
                 report($exception);
                 $view->with('navCategories', collect());
             }
+        });
+        View::composer('backend.layout.app', function ($view): void {
+            $user = auth()->user();
+            $notifications = collect();
+            $unreadNotificationCount = 0;
+            if ($user && $user->canManageOrders()) {
+                try {
+                    $notifications = $user->notifications()->latest()->limit(6)->get();
+                    $unreadNotificationCount = $user->unreadNotifications()->count();
+                } catch (\Throwable $exception) { report($exception); }
+            }
+            $view->with(compact('notifications','unreadNotificationCount'));
         });
     }
 }

@@ -17,9 +17,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update(User $user, array $input): void
     {
+        $input['email'] = mb_strtolower(trim($input['email'] ?? ''));
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', function ($attribute, $value, $fail) use ($user): void {
+                if (User::query()->whereKeyNot($user->id)->whereRaw('LOWER(TRIM(email)) = ?', [mb_strtolower(trim((string) $value))])->exists()) {
+                    $fail('An account already exists for this email address.');
+                }
+            }],
             'phone' => ['nullable', 'string', 'regex:/^[0-9+()\-\s]{8,24}$/'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');

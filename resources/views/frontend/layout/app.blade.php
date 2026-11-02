@@ -11,7 +11,7 @@
     <title>House Of Maithili | Indian Fashion</title>
 
     <!-- favicon -->
-    <link rel="icon" type="image/x-icon" href="{{url('/')}}/frontend/favicon.png">
+    <link rel="icon" type="image/png" href="{{ asset('frontend/images/house-of-maithili.png') }}">
 
     <!-- css -->
     <link rel="stylesheet" href="{{url('/')}}/frontend/css/bootstrap.min.css">

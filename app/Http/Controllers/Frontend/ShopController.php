@@ -66,6 +66,28 @@ class ShopController extends Controller
         return view('frontend.shop.index', compact('category', 'categorySlug', 'subcategorySlug', 'products', 'categories', 'query', 'sort'));
     }
 
+    public function makhana()
+    {
+        $products = Product::query()
+            ->where('status', true)
+            ->whereHas('category', fn (Builder $category) => $category->where('status', true))
+            ->where(function (Builder $builder): void {
+                $builder->where('name', 'like', '%makhana%')
+                    ->orWhere('brand', 'like', '%makhana%')
+                    ->orWhereHas('category', fn (Builder $category) => $category->where('status', true)->where(function (Builder $match) {
+                        $match->where('name', 'like', '%makhana%')->orWhere('slug', 'like', '%makhana%');
+                    }))
+                    ->orWhereHas('subcategory', fn (Builder $subcategory) => $subcategory->where('status', true)->where(function (Builder $match) {
+                        $match->where('name', 'like', '%makhana%')->orWhere('slug', 'like', '%makhana%');
+                    }));
+            })
+            ->with(['category', 'images', 'variants' => fn ($builder) => $builder->where('is_active', true)->orderBy('id')])
+            ->withCount(['variants' => fn ($builder) => $builder->where('is_active', true)])
+            ->orderByDesc('is_featured')->latest()->paginate(24);
+
+        return view('frontend.shop.makhana', compact('products'));
+    }
+
     public function suggestions(Request $request): JsonResponse
     {
         $term = trim(Str::limit((string) $request->query('q', ''), 100, ''));

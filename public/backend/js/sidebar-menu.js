@@ -4,6 +4,7 @@ $.sidebarMenu = function (menu) {
   $(menu).on('click', 'li a', function (e) {
     var $this = $(this);
     var checkElement = $this.next();
+    var wasSubmenuVisible = checkElement.is(subMenuSelector) && checkElement.is(':visible');
     if (checkElement.is(subMenuSelector) && checkElement.is(':visible')) {
       checkElement.slideUp(animationSpeed, function () {
         checkElement.removeClass('menu-open');
@@ -21,6 +22,15 @@ $.sidebarMenu = function (menu) {
       });
     }
     if (checkElement.is(subMenuSelector)) {
+      var $parent = $this.parent('li');
+      $this.attr('aria-expanded', wasSubmenuVisible ? 'false' : 'true');
+      if ($parent.children(subMenuSelector).length) {
+        if (wasSubmenuVisible) {
+          sessionStorage.removeItem('adminSidebarOpenMenu');
+        } else {
+          sessionStorage.setItem('adminSidebarOpenMenu', $parent.index());
+        }
+      }
       e.preventDefault();
     }
   });
@@ -67,29 +77,42 @@ $(window).resize(function () {
   }
 });
 
-// $(".sidebar-menu>li").removeClass("active");
-// $(".sidebar-menu").find("a").removeClass("active");
-$(".sidebar-menu").find("li a").removeClass("active");
+// Match routes, including nested links, without false partial URL matches.
+var currentUrl = new URL(window.location.href);
+var currentPath = currentUrl.pathname.replace(/\/$/, '') || '/';
+$('.sidebar-menu a[href]').each(function () {
+  var rawHref = $(this).attr('href');
+  if (!rawHref || rawHref === '#' || rawHref.indexOf('javascript:') === 0) return;
 
-var current = window.location.pathname
-$(".sidebar-menu>li a").filter(function () {
+  var target;
+  try { target = new URL(rawHref, window.location.origin); } catch (error) { return; }
+  var targetPath = target.pathname.replace(/\/$/, '') || '/';
+  var pathMatches = currentPath === targetPath || (targetPath !== '/' && targetPath !== '/admin/orders' && currentPath.indexOf(targetPath + '/') === 0);
+  if (!pathMatches) return;
+  if (targetPath === '/admin/orders/list' && target.search === '' && (currentUrl.searchParams.has('status') || currentUrl.searchParams.has('refund_status'))) return;
 
-  // console.log(window.location.pathname);
-  // console.log($(this).attr("href"));
+  var queryMatches = true;
+  target.searchParams.forEach(function (value, key) {
+    if (currentUrl.searchParams.get(key) !== value) queryMatches = false;
+  });
+  if (!queryMatches) return;
 
-  var link = $(this).attr("href");
-  if (link) {
-    if (current.indexOf(link) != -1) {
-      $(this).parents('li a').addClass('active');
-      $(this).addClass('active');
-      // console.log(link + " found");
+  $(this).addClass('active').closest('li').addClass('active');
+  $(this).parents('li').addClass('active').children('.sidebar-header').addClass('active').attr('aria-expanded', 'true');
+});
+
+// Re-open the current or last expanded submenu after navigation.
+var $activeSubmenu = $('.sidebar-menu > li.active > .sidebar-submenu').first();
+if ($activeSubmenu.length) {
+  $activeSubmenu.addClass('menu-open').show();
+} else {
+  var rememberedIndex = sessionStorage.getItem('adminSidebarOpenMenu');
+  if (rememberedIndex !== null) {
+    var $remembered = $('.sidebar-menu > li').eq(Number(rememberedIndex));
+    var $rememberedSubmenu = $remembered.children('.sidebar-submenu');
+    if ($rememberedSubmenu.length) {
+      $remembered.addClass('active').children('.sidebar-header').attr('aria-expanded', 'true');
+      $rememberedSubmenu.addClass('menu-open').show();
     }
   }
-});
-
-// add active when dropdown links are active
-$(".sidebar-menu li").each(function (index) {
-  if ($(this).hasClass("active")) {
-    $(this).find(".sidebar-header").addClass("active")
-  }
-});
+}

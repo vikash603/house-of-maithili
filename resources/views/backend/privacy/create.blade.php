@@ -15,7 +15,7 @@
                             <div class="col-lg-6">
                                 <ol class="breadcrumb pull-right">
                                     <li class="breadcrumb-item">
-                                        <a href="index.html">
+                                        <a href="{{ route('admin.orders.dashboard') }}">
                                             <i data-feather="home"></i>
                                         </a>
                                     </li>

@@ -17,6 +17,8 @@ class AccountAccessService
     {
         if (!$order->email) return;
 
+        $this->assertAccountEmailTransportDoesNotLogMessages();
+
         $order->email = Str::lower(trim($order->email));
         $needsEmailCode = !$order->user_id || $order->account_auto_created_at !== null;
         $code = $needsEmailCode ? $this->newCode($order->email, 'order', $order->id) : null;
@@ -28,6 +30,7 @@ class AccountAccessService
 
     public function sendLoginCode(string $email): void
     {
+        $this->assertAccountEmailTransportDoesNotLogMessages();
         $email = Str::lower(trim($email));
         $code = $this->newCode($email, 'login', null);
         Mail::to($email)->queue(new AccountAccessCodeMail($code));
@@ -70,5 +73,23 @@ class AccountAccessService
         ]);
 
         return $code;
+    }
+
+    private function assertAccountEmailTransportDoesNotLogMessages(): void
+    {
+        $containsLogTransport = function (string $mailer, array $visited = []) use (&$containsLogTransport): bool {
+            if (in_array($mailer, $visited, true)) return false;
+            $visited[] = $mailer;
+            $config = (array) config('mail.mailers.'.$mailer, []);
+            if (($config['transport'] ?? null) === 'log') return true;
+            foreach ((array) ($config['mailers'] ?? []) as $nestedMailer) {
+                if ($containsLogTransport((string) $nestedMailer, $visited)) return true;
+            }
+            return false;
+        };
+
+        if ($containsLogTransport((string) config('mail.default', 'log'))) {
+            throw new \RuntimeException('Account access email requires a non-logging mail transport. Configure SMTP before enabling OTP or invoice emails.');
+        }
     }
 }

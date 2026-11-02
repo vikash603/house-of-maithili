@@ -8,6 +8,6 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     public function index(){
-        return view('backend.index');
+        return redirect()->route('admin.orders.dashboard');
     }
 }

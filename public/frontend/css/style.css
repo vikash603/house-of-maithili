@@ -8561,9 +8561,20 @@ label {
 .maithili-hero{--theme-color:#813e49;--theme-color2:#b28c5d;--theme-color-light:#f5eee7;--color-dark:#302925;width:100%;max-width:none;margin:0;padding:0;overflow:hidden}
 .maithili-hero .maithili-hero-slider{width:100%;padding-bottom:52px;border-radius:0;background:#f8f3eb;box-shadow:none}
 .maithili-hero .maithili-hero-slide{position:relative;display:block;width:100%;aspect-ratio:3/1;min-height:0;padding:0;overflow:hidden;background:#f8f3eb}
-.maithili-hero .maithili-hero-photo{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
-.maithili-hero .maithili-hero-photo>a{display:block;width:100%;height:100%}
-.maithili-hero .maithili-hero-photo img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.maithili-hero .maithili-hero-photo{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#f8f3eb}
+.maithili-hero .maithili-managed-banner,.maithili-hero .maithili-managed-banner-link{height:100%}
+.maithili-hero .maithili-managed-banner-picture{height:100%;aspect-ratio:auto}
+.maithili-managed-banner{position:relative;display:block;width:100%;max-width:100%;overflow:hidden;line-height:0}
+.maithili-managed-banner-link{position:relative;display:block;color:inherit;text-decoration:none}
+.maithili-managed-banner-picture{display:block;width:100%;max-width:100%;aspect-ratio:var(--banner-ratio,auto);overflow:hidden;background:#f8f3eb}
+.maithili-managed-banner-picture img{display:block;width:100%;height:auto;object-fit:contain;object-position:center}
+.maithili-managed-banner.has-desktop-ratio .maithili-managed-banner-picture img{height:100%}
+.maithili-managed-banner-content{position:absolute;right:clamp(18px,7vw,110px);bottom:clamp(18px,5vw,72px);left:clamp(18px,7vw,110px);display:flex;max-width:720px;flex-direction:column;align-items:flex-start;gap:10px;padding:clamp(16px,3vw,34px);background:linear-gradient(90deg,rgba(36,24,18,.75),rgba(36,24,18,.28),transparent);color:#fffdfa;line-height:1.45;pointer-events:none}
+.maithili-managed-banner-title{font-family:Georgia,'Times New Roman',serif;font-size:clamp(24px,4vw,52px);font-weight:400;line-height:1.12}
+.maithili-managed-banner-subtitle{max-width:58ch;font-size:clamp(14px,1.4vw,19px)}
+.maithili-managed-banner-cta{display:inline-flex;min-height:44px;align-items:center;gap:12px;margin-top:5px;padding:0 20px;border:1px solid rgba(255,253,250,.85);background:#713542;color:#fffdfa;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.maithili-managed-banner-link:hover .maithili-managed-banner-picture img,.maithili-managed-banner-link:focus-visible .maithili-managed-banner-picture img{filter:saturate(1.04);transform:scale(1.012)}
+.maithili-managed-banner-link:focus-visible{outline:3px solid #813e49;outline-offset:4px}
 .maithili-hero .hero-slider .owl-dots{bottom:7px;left:50%;transform:translateX(-50%)}
 .maithili-hero .hero-slider .owl-dots .owl-dot{width:10px;height:10px;margin:5px;background:#c7b6a5}
 .maithili-hero .hero-slider .owl-dots .owl-dot.active{width:24px;background:#813e49}
@@ -8576,6 +8587,13 @@ label {
 }
 @media(max-width:767px){
   .maithili-hero .maithili-hero-slider{padding-bottom:54px}
+  .maithili-managed-banner.has-mobile-banner .maithili-managed-banner-picture{aspect-ratio:var(--mobile-banner-ratio,var(--banner-ratio,auto))}
+  .maithili-managed-banner.has-mobile-banner .maithili-managed-banner-picture img{height:100%}
+  .maithili-hero .maithili-managed-banner.has-mobile-banner .maithili-managed-banner-picture{aspect-ratio:auto}
+  .maithili-managed-banner-content{right:10px;bottom:10px;left:10px;max-width:none;gap:7px;padding:14px;background:linear-gradient(0deg,rgba(36,24,18,.82),rgba(36,24,18,.32))}
+  .maithili-managed-banner-title{font-size:clamp(22px,7vw,34px)}
+  .maithili-managed-banner-subtitle{font-size:14px;line-height:1.45}
+  .maithili-managed-banner-cta{min-height:44px;padding:0 14px;font-size:10px}
   .maithili-hero .hero-slider .owl-dots{bottom:8px;left:16px;transform:none}
   .maithili-hero .hero-slider .owl-nav{right:8px;bottom:2px}
   .maithili-hero .hero-slider .owl-nav button{width:46px;height:46px;line-height:46px}
@@ -8590,26 +8608,39 @@ label {
 .maithili-shop-by-category{padding:42px 0 46px;background:#fffdfa}
 .maithili-shop-by-category h2{margin:0 0 30px;color:#302925;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;text-align:center}
 .maithili-shop-by-category h2:after{display:block;width:32px;height:1px;margin:13px auto 0;background:#b28c5d;content:""}
-.maithili-shop-category-list{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px;outline-color:#b28c5d}
+.maithili-shop-category-list{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:20px 12px;outline-color:#b28c5d}
 .maithili-shop-category-card{min-width:0;text-align:center}
+.maithili-shop-category-image-wrap{display:block;width:min(100%,136px);aspect-ratio:1;margin:0 auto 13px;padding:5px;border:1px solid rgba(178,140,93,.55);border-radius:50%;background:#fffdfa;box-shadow:0 7px 20px rgba(66,42,32,.06);transition:transform .25s ease,box-shadow .25s ease}
+.maithili-shop-category-card:hover .maithili-shop-category-image-wrap{transform:translateY(-4px);box-shadow:0 12px 25px rgba(66,42,32,.12)}
+.maithili-shop-category-image{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:center}
+.maithili-shop-category-card[data-category="sarees"] .maithili-shop-category-image{object-position:73% center}
 .maithili-shop-category-placeholder{position:relative;display:grid;width:min(100%,126px);aspect-ratio:1;margin:0 auto 12px;place-items:center;overflow:hidden;border:1px solid rgba(178,140,93,.42);border-radius:50%;background:radial-gradient(circle at 50% 42%,#fffdfa 0 42%,#f4ede2 43% 100%);box-shadow:inset 0 0 0 5px rgba(255,253,250,.75)}
 .maithili-shop-category-placeholder:before,.maithili-shop-category-placeholder:after{position:absolute;border:1px solid rgba(178,140,93,.24);border-radius:50%;content:""}
 .maithili-shop-category-placeholder:before{inset:10px}
 .maithili-shop-category-placeholder:after{inset:17px;border-color:rgba(129,62,73,.13)}
 .maithili-shop-category-placeholder span{position:relative;z-index:1;color:#813e49;font-family:Georgia,'Times New Roman',serif;font-size:35px;font-weight:400;letter-spacing:-.04em}
-.maithili-shop-category-card h3{margin:0;color:#302925;font-size:13px;font-weight:600;line-height:1.35}
-.maithili-shop-category-card p{margin:4px 0 0;color:#9a815b;font-size:9px;letter-spacing:.09em;text-transform:uppercase}
+.maithili-shop-category-card{display:block;color:inherit;text-decoration:none;transition:color .2s ease}
+.maithili-shop-category-card:hover{color:#813e49}
+.maithili-shop-category-card:focus-visible{outline:2px solid #b28c5d;outline-offset:4px}
+.maithili-shop-category-name{display:block;color:#302925;font-size:13px;font-weight:600;line-height:1.35}
 .maithili-shop-category-empty{grid-column:1/-1;color:#81776f;text-align:center}
-.maithili-institutional-clients{position:relative;overflow:hidden;padding:34px 0 38px;background:#fbf7ef;border-top:1px solid #eee5d8;border-bottom:1px solid #eee5d8}
-.maithili-clients-inner{position:relative;max-width:1240px}
-.maithili-clients-heading{max-width:840px;margin:0 auto}
-.maithili-institutional-clients h2,.maithili-stories-intro h2{color:#302925;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;line-height:1.2}
-.maithili-institutional-clients h2{margin:0;text-align:center}
-.maithili-clients-subtitle{margin:8px auto 20px;color:#71655b;font-size:13px;line-height:1.6;text-align:center}
-.maithili-client-logo-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:0;list-style:none}
-.maithili-client-logo-item{display:flex;min-width:0;min-height:104px;align-items:center;justify-content:center;padding:12px 26px;border-right:1px solid rgba(126,119,110,.25)}
-.maithili-client-logo-item:last-child{border-right:0}
-.maithili-client-logo-item img{display:block;width:100%;max-width:230px;height:82px;object-fit:contain}
+.maithili-trust-strip{position:relative;padding:42px 0;background:#fbf7ef;border-top:1px solid #eee5d8;border-bottom:1px solid #eee5d8}
+.maithili-trust-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;max-width:1360px}
+.maithili-trust-column{display:flex;min-width:0;flex-direction:column;justify-content:center;padding:4px clamp(18px,2.7vw,42px)}
+.maithili-trust-clients{border-right:1px solid rgba(178,140,93,.38)}
+.maithili-clients-heading{margin:0 auto}
+.maithili-trust-strip h2,.maithili-stories-intro h2{color:#302925;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;line-height:1.2}
+.maithili-trust-strip .maithili-clients-heading h2{margin:0;text-align:center}
+.maithili-clients-subtitle{margin:8px auto 17px;color:#71655b;font-size:13px;line-height:1.55;text-align:center}
+.maithili-client-logo-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;gap:10px;margin:0;padding:0;list-style:none}
+.maithili-client-logo-item{display:flex;min-width:0;min-height:76px;align-items:center;justify-content:center;padding:6px}
+.maithili-client-logo-item img{display:block;width:100%;max-width:180px;height:64px;object-fit:contain}
+.maithili-trust-press .maithili-section-heading{max-width:none;margin:0 0 14px;text-align:center}
+.maithili-trust-press .maithili-section-heading h2{font-size:28px}
+.maithili-media-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:10px;margin:0;padding:0;list-style:none}
+.maithili-media-list li{display:flex;min-width:0;min-height:76px;align-items:center;justify-content:center;padding:6px}
+.maithili-media-list img{display:block;width:100%;max-width:170px;height:64px;object-fit:contain}
+.maithili-stories-intro h2{color:#302925}
 .maithili-stories{padding:68px 0;background:#fffdfa}
 .maithili-stories-layout{display:grid;grid-template-columns:minmax(230px, .85fr) minmax(0,2.15fr);align-items:center;gap:38px}
 .maithili-stories-eyebrow{display:block;margin-bottom:13px;color:#9a815b;font-size:10px;font-weight:700;letter-spacing:.2em}
@@ -8635,11 +8666,53 @@ label {
 .maithili-story-player{aspect-ratio:16/9;background:#15110f}
 .maithili-story-player iframe,.maithili-story-player video{display:block;width:100%;height:100%;border:0;object-fit:contain}
 .maithili-story-player [hidden]{display:none!important}
-.maithili-stories{position:relative;min-height:400px;padding:0;background:#edc18e url('../images/our-story-in-motion-bg.png') left center/100% 400px no-repeat}
-.maithili-watch-all-overlay{position:absolute;top:calc(50% + 125px);left:8.84%;z-index:5;display:block;width:13.95%;height:48px}
-.maithili-watch-all-overlay:focus-visible{border-radius:5px;outline:3px solid #713542;outline-offset:3px}
-.maithili-stories-layout{min-height:400px}
-.maithili-stories-intro{opacity:0;pointer-events:none}
+.maithili-stories{position:relative;padding:68px 0;background:#fbf7ef}
+.maithili-story-thumb-placeholder{position:relative;z-index:0;display:grid;width:100%;height:100%;place-items:center;background:radial-gradient(circle at center,#fffdfa 0 24%,#efe4d6 25% 100%);color:#9a815b;font-family:Georgia,'Times New Roman',serif;font-size:13px}
+.maithili-story-thumb-placeholder:before,.maithili-story-thumb-placeholder:after{position:absolute;width:130px;height:130px;border:1px solid rgba(178,140,93,.3);border-radius:50%;content:""}
+.maithili-story-thumb-placeholder:after{width:100px;height:100px;border-color:rgba(129,62,73,.22)}
+.maithili-signature-edit{padding:68px 0;background:#fffdfa}
+.maithili-signature-edit .maithili-section-heading{margin-bottom:20px}
+.maithili-signature-edit .maithili-section-eyebrow{margin-bottom:0}
+.maithili-featured-sarees{padding:64px 0 70px;background:#fbf7f0}
+.maithili-featured-sarees-heading{max-width:760px;margin:0 auto 32px;text-align:center}
+.maithili-featured-sarees-heading .maithili-section-eyebrow{margin-bottom:10px}
+.maithili-featured-sarees-heading h2{margin:0;color:#713542;font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;letter-spacing:.035em}
+.maithili-featured-sarees-heading h2:after{display:block;width:42px;height:1px;margin:14px auto 0;background:#b28c5d;content:""}
+.maithili-featured-sarees-heading p{margin:12px 0 0;color:#71655b;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6}
+.maithili-signature-products-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.maithili-signature-products-grid.is-count-1{grid-template-columns:minmax(0,300px);justify-content:center}
+.maithili-signature-products-grid.is-count-2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:690px;margin-right:auto;margin-left:auto}
+.maithili-signature-products-grid.is-count-3{grid-template-columns:repeat(3,minmax(0,1fr));max-width:980px;margin-right:auto;margin-left:auto}
+.maithili-signature-product-card{overflow:hidden;border-color:#e9ddcb;border-radius:5px;box-shadow:none}
+.maithili-signature-product-card:hover{box-shadow:0 9px 24px rgba(66,42,32,.08)}
+.maithili-signature-product-card .maithili-product-image{aspect-ratio:4/3;background:#f3eadd}
+.maithili-signature-product-card .maithili-product-image-link>img{object-position:center 35%}
+.maithili-signature-product-card .maithili-product-info{padding:15px 16px 14px}
+.maithili-signature-product-card .maithili-product-info h3{min-height:42px;font-size:16px;line-height:1.45}
+.maithili-signature-product-card .maithili-product-prices{gap:8px;margin:10px 0 12px}
+.maithili-signature-product-card .maithili-product-prices strong{font-size:16px}
+.maithili-signature-product-card .maithili-product-prices del{font-size:12px}
+.maithili-signature-discount{position:absolute;top:12px;right:12px;padding:6px 9px;border:1px solid rgba(178,140,93,.35);border-radius:2px;background:#f7e7cb;color:#713542;font-size:10px;font-weight:700;letter-spacing:.04em}
+.maithili-signature-collection-action{margin-top:30px;text-align:center}
+.maithili-signature-collection-action .maithili-editorial-button{min-width:245px;min-height:48px}
+.maithili-campaign-banner{position:relative;width:100%;max-width:none;margin:0;border:0;border-radius:0;background:#f8ead7;color:inherit;line-height:0}
+.maithili-campaign-banner .maithili-managed-banner-picture{background:transparent}
+.maithili-campaign-banner .maithili-managed-banner-picture img{transition:transform .45s ease,filter .45s ease}
+.maithili-signature-edit .maithili-campaign-banner,.maithili-makhana .maithili-campaign-banner{width:100%;max-width:none;margin-right:0;margin-left:0}
+.maithili-makhana{padding:52px 0;background:#f8f3eb}
+.maithili-makhana-banner{border-color:rgba(178,140,93,.18)}
+.maithili-promotional-banner{margin:30px 0;background:#fffdfa}
+.maithili-makhana-listing .maithili-shop-results-intro{max-width:680px;margin:12px auto 28px;text-align:center}
+.maithili-makhana-listing .maithili-shop-results-section>.container>h1{margin:0;color:#713542;font-family:Georgia,'Times New Roman',serif;font-size:40px;font-weight:400;text-align:center}
+.maithili-makhana-listing .maithili-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.maithili-makhana-listing .maithili-product-price del{margin-left:7px;color:#94887e;font-size:12px;font-weight:400}
+.maithili-makhana-availability{display:inline-block;margin-top:2px;color:#71655b;font-size:11px}
+.maithili-makhana-availability.is-available{color:#39704a}
+.maithili-makhana-availability.is-unavailable{color:#9b4248}
+.maithili-makhana-cart-form{margin:auto 12px 12px}
+.maithili-makhana-cart-form button{display:flex;width:100%;min-height:42px;align-items:center;justify-content:space-between;padding:0 12px;border:1px solid #713542;background:#713542;color:#fffdfa;font-size:11px;font-weight:700;letter-spacing:.04em;cursor:pointer}
+.maithili-makhana-cart-form button:hover{background:#5e2c37}
+.maithili-product-view.is-disabled{color:#94887e}
 .maithili-bestsellers{background:#fffdfa}
 .maithili-section-heading{max-width:680px;margin:0 auto 30px;text-align:center}
 .maithili-section-eyebrow{display:block;margin-bottom:9px;color:#9a815b;font-size:10px;font-weight:700;letter-spacing:.2em}
@@ -8690,12 +8763,6 @@ label {
 .maithili-impact-image:before{width:220px;height:220px;box-shadow:0 0 0 18px rgba(178,140,93,.08),0 0 0 36px rgba(178,140,93,.05)}
 .maithili-impact-image:after{width:160px;height:160px;border-color:rgba(129,62,73,.18)}
 .maithili-impact-image span{position:relative;z-index:1;padding:8px 12px;background:rgba(255,253,250,.9)}
-.maithili-media-mentions{padding:56px 0;background:#fffdfa;border-top:1px solid #eee5d8;border-bottom:1px solid #eee5d8}
-.maithili-media-mentions .maithili-section-heading{margin-bottom:25px}
-.maithili-media-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:0;list-style:none}
-.maithili-media-list li{display:flex;min-height:72px;align-items:center;justify-content:center;gap:10px;padding:10px 14px;border-right:1px solid rgba(178,140,93,.32);color:#8a7c70;font-family:Georgia,'Times New Roman',serif;font-size:12px;font-style:italic;text-align:center}
-.maithili-media-list li:last-child{border-right:0}
-.maithili-media-mark{color:#b28c5d;font-size:18px;font-style:normal}
 .maithili-testimonials{padding:72px 0;background:#f8f3eb}
 .maithili-testimonial-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .maithili-testimonial-card{min-height:190px;padding:23px;border:1px solid #e9dece;background:#fffdfa}
@@ -8724,16 +8791,18 @@ label {
 .maithili-footer-group p+p{margin-top:10px}
 .maithili-footer-bottom{display:flex;justify-content:space-between;gap:16px;padding:16px 0;border-top:1px solid rgba(212,181,125,.28);color:rgba(255,253,250,.65);font-size:10px}
 @media(max-width:1199px){
-  .maithili-shop-category-list{grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
   .maithili-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 }
 @media(max-width:991px){
+  .maithili-trust-layout{grid-template-columns:1fr;max-width:820px}
+  .maithili-trust-column{padding:28px 20px}
+  .maithili-trust-clients{border-right:0;border-bottom:1px solid rgba(178,140,93,.38)}
+  .maithili-client-logo-list{gap:12px}
   .main-navigation .navbar{min-height:72px}
   .main-navigation .offcanvas{background:#fffdfa}
   .maithili-nav-links{padding-top:10px}
   .maithili-nav-links .nav-link{padding:15px 0!important;border-bottom:1px solid #eee7df}
   .maithili-nav-right{display:none}
-  .maithili-shop-category-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 14px}
   .maithili-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .maithili-stories-layout{grid-template-columns:1fr;gap:25px}
   .maithili-stories-intro{max-width:620px}
@@ -8759,19 +8828,15 @@ label {
   .maithili-highlight-item svg{width:23px;height:23px;flex-basis:23px}
   .maithili-shop-by-category{padding:32px 0 36px}
   .maithili-shop-by-category h2{margin-bottom:22px;font-size:27px}
-  .maithili-shop-category-list{display:flex;gap:16px;overflow-x:auto;overscroll-behavior-x:contain;padding:0 2px 10px;scroll-snap-type:x mandatory;scrollbar-color:#b28c5d #f4ede2;scrollbar-width:thin}
-  .maithili-shop-category-card{flex:0 0 116px;scroll-snap-align:start}
-  .maithili-shop-category-placeholder{width:108px;margin-bottom:10px}
-  .maithili-shop-category-placeholder span{font-size:31px}
-  .maithili-institutional-clients{padding:30px 0 28px}
-  .maithili-clients-heading{position:relative;z-index:1}
-  .maithili-institutional-clients h2{font-size:26px}
-  .maithili-clients-subtitle{max-width:360px;margin:9px auto 20px;font-size:12px}
-  .maithili-client-logo-list{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .maithili-client-logo-item{min-height:94px;padding:9px 12px;border-right:1px solid rgba(126,119,110,.25)}
-  .maithili-client-logo-item img{height:72px}
-  .maithili-client-logo-item:nth-child(even){border-right:0}
-  .maithili-client-logo-item:nth-child(-n+2){border-bottom:1px solid rgba(178,140,93,.32)}
+  .maithili-trust-strip{padding:22px 0}
+  .maithili-trust-column{padding:24px 6px}
+  .maithili-trust-strip h2,.maithili-trust-press .maithili-section-heading h2{font-size:25px}
+  .maithili-clients-subtitle{max-width:430px;margin:8px auto 13px;font-size:12px}
+  .maithili-client-logo-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .maithili-client-logo-item{min-height:68px;padding:5px}
+  .maithili-client-logo-item img,.maithili-media-list img{height:58px}
+  .maithili-media-list{gap:8px}
+  .maithili-media-list li{min-height:68px;padding:5px}
   .maithili-stories{padding:42px 0}
   .maithili-stories-intro h2{font-size:29px}
   .maithili-story-list{display:flex;gap:13px;overflow-x:auto;overscroll-behavior-x:contain;padding:0 0 10px;scroll-snap-type:x mandatory;scrollbar-color:#b28c5d #f4ede2;scrollbar-width:thin}
@@ -8792,11 +8857,6 @@ label {
   .maithili-impact-metric strong{font-size:10px}
   .maithili-impact-metric span{font-size:9px}
   .maithili-impact-image{min-height:245px}
-  .maithili-media-mentions{padding:42px 0}
-  .maithili-media-list{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .maithili-media-list li{min-height:60px;padding:8px;border-right:1px solid rgba(178,140,93,.32);font-size:11px}
-  .maithili-media-list li:nth-child(2){border-right:0}
-  .maithili-media-list li:nth-child(-n+2){border-bottom:1px solid rgba(178,140,93,.32)}
   .maithili-testimonials{padding:48px 0}
   .maithili-testimonial-grid{grid-template-columns:1fr;gap:12px}
   .maithili-testimonial-card{min-height:0;padding:18px}
@@ -8809,46 +8869,16 @@ label {
 }
 @media(prefers-reduced-motion:reduce){.maithili-hero .hero-content [data-animation]{animation:none!important}}
 
-/* Category cards now link to the real catalogue filter. */
-.maithili-shop-category-card{display:block;color:inherit;text-decoration:none;transition:transform .2s ease}
-.maithili-shop-category-card:hover{transform:translateY(-3px);color:#813e49}
-.maithili-shop-category-card:focus-visible{outline:2px solid #b28c5d;outline-offset:4px}
-.maithili-shop-category-image{display:block;width:min(100%,126px);aspect-ratio:1;margin:0 auto 12px;border:1px solid rgba(178,140,93,.42);border-radius:50%;object-fit:cover;object-position:center}
-.maithili-shop-category-name{display:block;color:#302925;font-size:13px;font-weight:600;line-height:1.35}
-.maithili-category-photo-note{display:block;margin:-7px 0 5px;color:#9a815b;font-size:9px;letter-spacing:.09em;text-transform:uppercase}
 .maithili-newsletter-error{color:#8d2731!important}
 .maithili-shop-results-section{min-height:50vh;padding:64px 0;background:#fffdfa}
 .maithili-shop-results-section h1{margin:0 0 24px;color:#813e49;font-family:Georgia,'Times New Roman',serif;font-size:38px;font-weight:400}
 .maithili-shop-results-empty{padding:24px;border:1px dashed rgba(178,140,93,.58);background:#fbf7f0;color:#71655b}
-@media(min-width:768px) and (max-width:1199px){.maithili-shop-category-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 14px}}
 @media(min-width:768px) and (max-width:1199px){.maithili-client-logo-item{min-height:100px;padding-right:12px;padding-left:12px}.maithili-client-logo-item img{max-height:82px}}
 @media(max-width:767px){
-  .maithili-shop-category-list{display:flex;gap:16px;overflow-x:auto;overscroll-behavior-x:contain;padding:0 2px 10px;scroll-snap-type:x mandatory;scrollbar-color:#b28c5d #f4ede2;scrollbar-width:thin}
-  .maithili-shop-category-card{flex:0 0 116px;scroll-snap-align:start}
-  .maithili-shop-category-image,.maithili-shop-category-placeholder{width:108px}
   .maithili-newsletter-form{flex-direction:column}
   .maithili-newsletter-form button{min-height:44px}
   .maithili-shop-results-section{padding:42px 0}
   .maithili-shop-results-section h1{font-size:30px}
-}
-
-/* Keep every category on one horizontal track and let customers slide through them. */
-.maithili-shop-category-heading{position:relative}
-.maithili-shop-category-list{display:flex!important;flex-wrap:nowrap!important;gap:18px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;padding:4px 2px 12px;scroll-behavior:smooth;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.maithili-shop-category-list::-webkit-scrollbar{display:none}
-.maithili-shop-category-card{display:block;flex:0 0 calc((100% - 126px)/8);width:calc((100% - 126px)/8);min-width:0;scroll-snap-align:start}
-.maithili-shop-category-controls{position:absolute;top:0;right:0;display:flex;gap:8px}
-.maithili-shop-category-controls button{display:grid;width:34px;height:34px;place-items:center;border:1px solid rgba(129,62,73,.25);border-radius:50%;background:#fffdfa;color:#813e49;font-size:24px;line-height:1;cursor:pointer;transition:background .2s ease,color .2s ease,border-color .2s ease}
-.maithili-shop-category-controls button:hover:not(:disabled){border-color:#813e49;background:#813e49;color:#fff}
-.maithili-shop-category-controls button:focus-visible{outline:2px solid #b28c5d;outline-offset:3px}
-.maithili-shop-category-controls button:disabled{opacity:.35;cursor:default}
-@media(min-width:768px) and (max-width:1199px){.maithili-shop-category-card{flex-basis:calc((100% - 54px)/4);width:calc((100% - 54px)/4)}}
-@media(max-width:767px){
-  .maithili-shop-category-heading{padding-right:82px}
-  .maithili-shop-category-controls{top:-2px}
-  .maithili-shop-category-controls button{width:31px;height:31px;font-size:22px}
-  .maithili-shop-category-list{gap:14px}
-  .maithili-shop-category-card{flex:0 0 clamp(116px,40vw,176px);width:clamp(116px,40vw,176px)}
 }
 
 /* House Of Maithili header navigation and search */
@@ -8863,7 +8893,7 @@ label {
 .search-popup .form-control::placeholder{color:#796e64;font-size:16px}
 .search-popup .form-group button{color:#813e49;font-size:22px}
 .search-popup .close-search{background:#813e49}
-@media(max-width:1199px){
+@media(max-width:1314px){
   .main-navigation .navbar{min-height:72px}
   .navbar-expand-xl .navbar-toggler{display:block!important}
   .mobile-menu-right,.mobile-menu-btn{display:flex;align-items:center}
@@ -8892,7 +8922,7 @@ label {
 }
 
 /* More Than Fashion impact banner artwork */
-.maithili-impact{position:relative;display:block;min-height:300px;aspect-ratio:19/4;padding:0;background:#edc08b url('../images/maithili-impact-banner.png') center top/100% 100% no-repeat}
+.maithili-impact{position:relative;display:block;min-height:0;aspect-ratio:19/4;padding:0;background:#edc08b url('../images/maithili-impact-banner.png') center top/100% 100% no-repeat}
 .maithili-impact-accessible-content{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:991px){.maithili-impact{min-height:260px;aspect-ratio:auto;background-size:auto 260px;background-position:left top}}
 
@@ -8958,13 +8988,6 @@ label {
 /* Home page press, testimonials, service highlights and newsletter refresh */
 .maithili-highlights-list{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));align-items:stretch}
 .maithili-highlight-item{min-height:58px}
-.maithili-media-mentions{padding:30px 0 34px;background:#fffdfa;border-top:1px solid #eee5d8;border-bottom:1px solid #eee5d8}
-.maithili-media-mentions .maithili-section-heading{margin-bottom:16px}
-.maithili-media-mentions .maithili-section-heading h2{font-size:27px}
-.maithili-media-list{grid-template-columns:repeat(3,minmax(0,1fr));max-width:1000px;margin:0 auto}
-.maithili-media-list li{min-height:74px;padding:10px 22px;border-right:1px solid rgba(178,140,93,.3);font-style:normal}
-.maithili-media-list li:last-child{border-right:0}
-.maithili-media-list img{display:block;width:100%;max-width:165px;height:56px;object-fit:contain;filter:saturate(.88)}
 .maithili-testimonials{padding:42px 0 48px;background:#f8f3eb}
 .maithili-testimonials-heading{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}
 .maithili-testimonials-heading .maithili-section-heading{margin:0;text-align:left}
@@ -8995,12 +9018,6 @@ label {
 @media(max-width:767px){
   .maithili-highlights-list{grid-template-columns:repeat(2,minmax(0,1fr))}
   .maithili-highlight-item{padding:6px 8px;font-size:11px}
-  .maithili-media-mentions{padding:30px 0}
-  .maithili-media-list{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .maithili-media-list li{min-height:58px;padding:7px 10px}
-  .maithili-media-list li:nth-child(-n+2){border-bottom:0}
-  .maithili-media-list li:nth-child(2){border-right:1px solid rgba(178,140,93,.3)}
-  .maithili-media-list img{height:42px}
   .maithili-testimonials{padding:36px 0}
   .maithili-testimonials-heading{align-items:center}
   .maithili-testimonials-heading .maithili-section-heading h2{font-size:25px}
@@ -9060,3 +9077,41 @@ label {
   .maithili-category-dropdown{min-width:250px;padding:12px;border-radius:8px;box-shadow:0 18px 45px rgba(47,32,25,.16)}
   .maithili-category-dropdown a{padding:11px 13px;font-size:14px}
 }
+
+/* Editorial homepage additions and category grid breakpoints. */
+@media(min-width:768px) and (max-width:1024px){
+  .maithili-shop-category-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px 18px}
+  .maithili-shop-category-image-wrap{width:min(100%,148px)}
+  .maithili-signature-products-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px;margin-right:auto;margin-left:auto}
+  .maithili-makhana-listing .maithili-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:767px){
+  .maithili-shop-category-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 10px;overflow:visible;padding:0}
+  .maithili-shop-category-image-wrap{width:min(100%,128px);margin-bottom:9px}
+  .maithili-shop-category-placeholder{width:min(100%,118px);margin-bottom:9px}
+  .maithili-shop-category-name{font-size:12px}
+  .maithili-stories{padding:44px 0}
+  .maithili-signature-edit{padding:48px 0}
+  .maithili-signature-edit{padding:42px 0}
+  .maithili-featured-sarees{padding:44px 0 50px}
+  .maithili-featured-sarees-heading{margin-bottom:24px}
+  .maithili-featured-sarees-heading h2{font-size:27px}
+  .maithili-featured-sarees-heading p{font-size:14px}
+  .maithili-signature-products-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .maithili-signature-products-grid.is-count-1{grid-template-columns:minmax(0,290px)}
+  .maithili-signature-products-grid.is-count-2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
+  .maithili-signature-products-grid.is-count-3{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
+  .maithili-signature-product-card .maithili-product-info{padding:11px}
+  .maithili-signature-product-card .maithili-product-info h3{min-height:0;font-size:14px}
+  .maithili-signature-product-card .maithili-product-prices strong{font-size:13px}
+  .maithili-signature-product-card .maithili-product-prices del{font-size:10px}
+  .maithili-signature-product-card .maithili-product-actions{grid-template-columns:1fr}
+  .maithili-signature-collection-action{margin-top:23px}
+  .maithili-signature-collection-action .maithili-editorial-button{max-width:100%}
+  .maithili-campaign-banner{border-radius:2px}
+  .maithili-makhana{padding:38px 0}
+  .maithili-makhana-listing .maithili-shop-results-section>.container>h1{font-size:30px}
+  .maithili-makhana-listing .maithili-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .maithili-makhana-cart-form{margin-right:9px;margin-left:9px}
+}
+@media(max-width:400px){.maithili-shop-category-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px}}

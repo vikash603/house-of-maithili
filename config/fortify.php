@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/account/orders',
 
     /*
     |--------------------------------------------------------------------------
@@ -145,8 +145,8 @@ return [
 
     'features' => [
         Features::registration(),
+        Features::emailVerification(),
         Features::resetPasswords(),
-        // Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),
         Features::twoFactorAuthentication([
